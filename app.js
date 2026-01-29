@@ -370,6 +370,8 @@ function getSessionIcon(task) {
  */
 function renderTaskCard(task) {
     const statusInfo = getStatusInfo(task.status);
+    const projectName = task.project_name || task.project || '';
+    const lastUpdated = task.last_updated ? formatRelativeTime(task.last_updated) : '';
 
     // Build assignment badges
     let assignmentBadges = '';
@@ -379,7 +381,7 @@ function renderTaskCard(task) {
             assignmentBadges += `
                 <span class="assignment-badge skill">
                     ⚡ ${escapeHtml(task.assigned_skill)}
-                    <span class="remove-badge" onclick="removeAssignment('${task.id}', 'skill')">×</span>
+                    <span class="remove-badge" onclick="event.stopPropagation(); removeAssignment('${task.id}', 'skill')">×</span>
                 </span>
             `;
         }
@@ -387,7 +389,7 @@ function renderTaskCard(task) {
             assignmentBadges += `
                 <span class="assignment-badge agent">
                     🤖 ${escapeHtml(task.assigned_agent)}
-                    <span class="remove-badge" onclick="removeAssignment('${task.id}', 'agent')">×</span>
+                    <span class="remove-badge" onclick="event.stopPropagation(); removeAssignment('${task.id}', 'agent')">×</span>
                 </span>
             `;
         }
@@ -398,11 +400,13 @@ function renderTaskCard(task) {
         <div class="task-card status-${task.status}"
              draggable="true"
              data-task-id="${task.id}"
+             onclick="openTaskDetails('${task.id}')"
              ondragover="handleTaskDragOver(event)"
              ondragleave="handleTaskDragLeave(event)"
              ondrop="handleTaskDrop(event)">
             <div class="task-header">
                 <span class="task-status ${statusInfo.class}">${statusInfo.icon} ${statusInfo.text}</span>
+                ${lastUpdated ? `<span class="task-time">${lastUpdated}</span>` : ''}
             </div>
             <div class="task-title">${escapeHtml(task.subject)}</div>
             ${task.last_result && task.status === 'failed' ?
@@ -410,10 +414,10 @@ function renderTaskCard(task) {
             ${assignmentBadges}
             <div class="task-actions">
                 ${task.status === 'failed' ?
-                    `<button class="btn btn-small btn-primary" onclick="retryTask('${task.id}')">🔄</button>` : ''}
-                <button class="btn btn-small btn-secondary" onclick="editTask('${task.id}')">✏️</button>
+                    `<button class="btn btn-small btn-primary" onclick="event.stopPropagation(); retryTask('${task.id}')">🔄</button>` : ''}
+                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); editTask('${task.id}')">✏️</button>
                 ${task.status !== 'completed' ?
-                    `<button class="btn btn-small btn-secondary" onclick="startTask('${task.id}')">▶️</button>` : ''}
+                    `<button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); startTask('${task.id}')">▶️</button>` : ''}
             </div>
         </div>
     `;
@@ -703,7 +707,120 @@ function addTaskToSession(sessionId) {
     // Open the new task modal with session pre-selected
     openModal('newTaskModal');
     // Could set a hidden field or state for the target session
-    showToast(`הוספת משימה ל-${sessionId}`, 'info');
+    showToast(`Adding task to ${sessionId}`, 'info');
+}
+
+/**
+ * Open task details modal
+ */
+function openTaskDetails(taskId) {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    // Create or update the task details modal
+    let modal = document.getElementById('taskDetailsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'taskDetailsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="taskDetailsTitle">Task Details</h3>
+                    <button class="modal-close" onclick="closeModal('taskDetailsModal')">&times;</button>
+                </div>
+                <div class="modal-body" id="taskDetailsBody">
+                </div>
+                <div class="modal-footer" id="taskDetailsFooter">
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Populate skills dropdown options
+    const skillOptions = state.skills.map(s =>
+        `<option value="${escapeHtml(s.id)}" ${task.assigned_skill === s.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`
+    ).join('');
+
+    // Populate agent dropdown options
+    const agentOptions = state.agents.map(a =>
+        `<option value="${escapeHtml(a.id)}" ${task.assigned_agent === a.id ? 'selected' : ''}>${a.icon || '🤖'} ${escapeHtml(a.name)}</option>`
+    ).join('');
+
+    const statusInfo = getStatusInfo(task.status);
+    const projectName = task.project_name || task.project || 'N/A';
+    const lastUpdated = task.last_updated ? formatDate(task.last_updated) : 'N/A';
+    const created = task.created ? formatDate(task.created) : 'N/A';
+
+    document.getElementById('taskDetailsTitle').textContent = task.subject;
+    document.getElementById('taskDetailsBody').innerHTML = `
+        <div class="task-detail-row">
+            <label>Status:</label>
+            <span class="task-status ${statusInfo.class}">${statusInfo.icon} ${statusInfo.text}</span>
+        </div>
+
+        <div class="task-detail-row">
+            <label>Project:</label>
+            <span>${escapeHtml(projectName)}</span>
+        </div>
+
+        <div class="task-detail-row">
+            <label>Description:</label>
+            <p class="task-description">${escapeHtml(task.description || 'No description')}</p>
+        </div>
+
+        ${task.last_result ? `
+        <div class="task-detail-row">
+            <label>Last Result:</label>
+            <p class="task-result ${task.status === 'failed' ? 'error' : ''}">${escapeHtml(task.last_result)}</p>
+        </div>
+        ` : ''}
+
+        <div class="task-detail-row">
+            <label>Assign Skill:</label>
+            <select id="detailTaskSkill" class="filter-select" onchange="updateTaskAssignment('${task.id}', 'skill', this.value)">
+                <option value="">None</option>
+                ${skillOptions}
+            </select>
+        </div>
+
+        <div class="task-detail-row">
+            <label>Assign Agent:</label>
+            <select id="detailTaskAgent" class="filter-select" onchange="updateTaskAssignment('${task.id}', 'agent', this.value)">
+                <option value="">Auto</option>
+                ${agentOptions}
+            </select>
+        </div>
+
+        <div class="task-detail-meta">
+            <span>Created: ${created}</span>
+            <span>Updated: ${lastUpdated}</span>
+        </div>
+    `;
+
+    document.getElementById('taskDetailsFooter').innerHTML = `
+        <button class="btn btn-secondary" onclick="closeModal('taskDetailsModal')">Close</button>
+        ${task.status === 'failed' ? `<button class="btn btn-primary" onclick="retryTask('${task.id}'); closeModal('taskDetailsModal');">🔄 Retry</button>` : ''}
+        ${task.status !== 'completed' ? `<button class="btn btn-primary" onclick="startTask('${task.id}'); closeModal('taskDetailsModal');">▶️ Start</button>` : ''}
+    `;
+
+    modal.classList.add('open');
+}
+
+/**
+ * Update task assignment from details modal
+ */
+function updateTaskAssignment(taskId, type, value) {
+    if (value) {
+        if (type === 'skill') {
+            assignSkillToTask(taskId, value);
+        } else if (type === 'agent') {
+            assignAgentToTask(taskId, value);
+        }
+    } else {
+        removeAssignment(taskId, type);
+    }
 }
 
 // ============================================================
@@ -1084,12 +1201,99 @@ function createSkill() {
 
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('open');
+    if (modal) {
+        modal.classList.add('open');
+
+        // Populate skills dropdown when opening new task modal
+        if (modalId === 'newTaskModal') {
+            populateSkillsDropdown();
+        }
+    }
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.remove('open');
+}
+
+/**
+ * Populate skills dropdown in the new task modal
+ */
+function populateSkillsDropdown() {
+    const select = document.getElementById('newTaskSkill');
+    if (!select) return;
+
+    // Keep the first "none" option
+    select.innerHTML = '<option value="">ללא</option>';
+
+    // Add all skills
+    state.skills.forEach(skill => {
+        const option = document.createElement('option');
+        option.value = skill.id;
+        option.textContent = `${skill.name} - ${(skill.description || '').substring(0, 30)}`;
+        select.appendChild(option);
+    });
+}
+
+/**
+ * Save new task
+ */
+function saveNewTask() {
+    const title = document.getElementById('newTaskTitle').value.trim();
+    const description = document.getElementById('newTaskDescription').value.trim();
+    const agent = document.getElementById('newTaskAgent').value;
+    const skill = document.getElementById('newTaskSkill').value;
+    const scheduleType = document.querySelector('input[name="schedule"]:checked').value;
+    const scheduleTime = document.getElementById('scheduleTime').value;
+
+    if (!title) {
+        showToast('Please enter a task title', 'warning');
+        return;
+    }
+
+    // Create task object
+    const newTask = {
+        id: `new_${Date.now()}`,
+        source: 'session',
+        type: 'task',
+        subject: title,
+        description: description,
+        status: 'pending',
+        created: new Date().toISOString(),
+        last_updated: new Date().toISOString(),
+        assigned_skill: skill || null,
+        assigned_agent: agent || null,
+    };
+
+    // Handle scheduling
+    if (scheduleType === 'later' && scheduleTime) {
+        newTask.schedule = {
+            type: 'once',
+            time: scheduleTime
+        };
+        newTask.source = 'scheduled';
+    }
+
+    // Save to pending tasks (will be synced)
+    const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
+    pendingTasks.push(newTask);
+    localStorage.setItem('pending_new_tasks', JSON.stringify(pendingTasks));
+
+    // Add to current state for immediate display
+    state.tasks.unshift(newTask);
+    renderTasks();
+
+    // Clear form and close modal
+    document.getElementById('newTaskTitle').value = '';
+    document.getElementById('newTaskDescription').value = '';
+    document.getElementById('newTaskAgent').value = '';
+    document.getElementById('newTaskSkill').value = '';
+    document.querySelector('input[name="schedule"][value="now"]').checked = true;
+    document.getElementById('scheduleTime').value = '';
+    document.getElementById('scheduleTime').classList.add('hidden');
+
+    closeModal('newTaskModal');
+    showToast('Task created! Will sync on next update.', 'success');
 }
 
 // ============================================================
@@ -1171,6 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('newTaskBtn').addEventListener('click', () => openModal('newTaskModal'));
     document.getElementById('closeNewTaskModal').addEventListener('click', () => closeModal('newTaskModal'));
     document.getElementById('cancelNewTask').addEventListener('click', () => closeModal('newTaskModal'));
+    document.getElementById('saveNewTask').addEventListener('click', saveNewTask);
 
     // Schedule toggle
     document.querySelectorAll('input[name="schedule"]').forEach(radio => {
@@ -1284,3 +1489,6 @@ window.handleTaskDragLeave = handleTaskDragLeave;
 window.handleTaskDrop = handleTaskDrop;
 window.runHealthCheck = runHealthCheck;
 window.launchAgent = launchAgent;
+window.openTaskDetails = openTaskDetails;
+window.updateTaskAssignment = updateTaskAssignment;
+window.saveNewTask = saveNewTask;

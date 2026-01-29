@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_aggregated": "2026-01-29T22:04:39.206Z",
+  "last_aggregated": "2026-01-29T23:34:40.902Z",
   "sources": {
     "scheduled": "C:\\Users\\user\\.claude\\scheduled-tasks.json",
     "sessions": "C:\\Users\\user\\.claude\\tasks",
@@ -37,7 +37,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Writing Europe PMC search script"
+      "project_name": "Systematic Review",
+      "activeForm": "Writing Europe PMC search script",
+      "last_updated": "2026-01-24T19:56:01.000Z",
+      "created": "2026-01-24T19:56:01.000Z"
     },
     {
       "id": "session_4d37c957-5311-4caf-8a6b-395a52d35cfe_2",
@@ -50,7 +53,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Writing Web of Science search script"
+      "project_name": "Systematic Review",
+      "activeForm": "Writing Web of Science search script",
+      "last_updated": "2026-01-24T19:58:21.062Z",
+      "created": "2026-01-24T19:58:21.062Z"
     },
     {
       "id": "session_4d37c957-5311-4caf-8a6b-395a52d35cfe_3",
@@ -63,7 +69,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Writing Google Scholar search script"
+      "project_name": "Systematic Review",
+      "activeForm": "Writing Google Scholar search script",
+      "last_updated": "2026-01-24T19:58:21.065Z",
+      "created": "2026-01-24T19:58:21.065Z"
     },
     {
       "id": "session_4d37c957-5311-4caf-8a6b-395a52d35cfe_4",
@@ -76,7 +85,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Exporting PsycINFO results"
+      "project_name": "Systematic Review",
+      "activeForm": "Exporting PsycINFO results",
+      "last_updated": "2026-01-24T20:28:43.929Z",
+      "created": "2026-01-24T20:28:43.929Z"
     },
     {
       "id": "session_4d37c957-5311-4caf-8a6b-395a52d35cfe_5",
@@ -89,7 +101,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Exporting Scopus results"
+      "project_name": "Systematic Review",
+      "activeForm": "Exporting Scopus results",
+      "last_updated": "2026-01-24T20:28:43.930Z",
+      "created": "2026-01-24T20:28:43.930Z"
     },
     {
       "id": "session_4d37c957-5311-4caf-8a6b-395a52d35cfe_6",
@@ -102,7 +117,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Writing preprint search script"
+      "project_name": "Systematic Review",
+      "activeForm": "Writing preprint search script",
+      "last_updated": "2026-01-24T20:03:10.319Z",
+      "created": "2026-01-24T20:03:10.319Z"
     },
     {
       "id": "session_4d37c957-5311-4caf-8a6b-395a52d35cfe_7",
@@ -115,137 +133,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "4d37c957-5311-4caf-8a6b-395a52d35cfe",
-      "activeForm": "Running deduplication on all sources"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_1",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\1.json",
-      "type": "task",
-      "subject": "Phase 1: Create security foundation",
-      "description": "Create input validation functions, safe command executor, .env setup, and prompt injection validator",
-      "status": "completed",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating security foundation"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_10",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\10.json",
-      "type": "task",
-      "subject": "Phase 10: Final polish",
-      "description": "Create /task-center skill, add to CLAUDE.md, performance testing, security audit, user guide",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Final polish"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_2",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\2.json",
-      "type": "task",
-      "subject": "Phase 2: Create core infrastructure",
-      "description": "Create directory structure, aggregate-tasks.js with streaming, JSONL logs, delta sync, debounced watchers",
-      "status": "in_progress",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating core infrastructure"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_3",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\3.json",
-      "type": "task",
-      "subject": "Phase 3: Create health monitoring + self-correction",
-      "description": "Create health-check.ps1, run-claude-task.ps1, setup Windows Task Scheduler, implement 3-step self-correction",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating health monitoring"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_4",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\4.json",
-      "type": "task",
-      "subject": "Phase 4: Create mobile-first web dashboard",
-      "description": "Create responsive HTML/CSS, drag & drop, touch controls, card-based display, Quick Fix sidebar, Hebrew RTL",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating web dashboard"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_5",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\5.json",
-      "type": "task",
-      "subject": "Phase 5: Deploy to GitHub Pages",
-      "description": "Create repository, enable Pages, create sync script with OAuth 2.0 + PKCE, test bidirectional sync",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Deploying to GitHub Pages"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_6",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\6.json",
-      "type": "task",
-      "subject": "Phase 6: Create self-learning system",
-      "description": "Implement error pattern matching, fix application with user confirmation, store patterns in error-patterns.json, track success rates",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating self-learning system"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_7",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\7.json",
-      "type": "task",
-      "subject": "Phase 7: Create agent & skill management",
-      "description": "Add skill/agent dropdowns, agent launcher, running agents status, create skill/agent as tracked task",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating agent & skill management"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_8",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\8.json",
-      "type": "task",
-      "subject": "Phase 8: Create skill factory with natural language",
-      "description": "Natural language skill/agent creation, skill browser with descriptions, searchable list, one-click assignment",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Creating skill factory"
-    },
-    {
-      "id": "session_a50f5bbf-239f-4280-91a4-2b6b215de0aa_9",
-      "source": "session",
-      "source_file": "C:\\Users\\user\\.claude\\tasks\\a50f5bbf-239f-4280-91a4-2b6b215de0aa\\9.json",
-      "type": "task",
-      "subject": "Phase 9: Add notifications",
-      "description": "Windows Toast notifications, WhatsApp alerts via Green API, notification preferences",
-      "status": "pending",
-      "blocks": [],
-      "blockedBy": [],
-      "project": "a50f5bbf-239f-4280-91a4-2b6b215de0aa",
-      "activeForm": "Adding notifications"
+      "project_name": "Systematic Review",
+      "activeForm": "Running deduplication on all sources",
+      "last_updated": "2026-01-24T19:49:17.196Z",
+      "created": "2026-01-24T19:49:17.196Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_1",
@@ -258,7 +149,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Searching for flights"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for flights",
+      "last_updated": "2026-01-27T20:39:00.516Z",
+      "created": "2026-01-27T20:39:00.516Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_2",
@@ -271,7 +165,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Searching for car rentals"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for car rentals",
+      "last_updated": "2026-01-27T20:39:00.516Z",
+      "created": "2026-01-27T20:39:00.516Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_3",
@@ -284,7 +181,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Searching for Rome apartment"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Rome apartment",
+      "last_updated": "2026-01-27T20:39:00.541Z",
+      "created": "2026-01-27T20:39:00.541Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_4",
@@ -297,7 +197,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Searching for Tuscany agriturismo"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Tuscany agriturismo",
+      "last_updated": "2026-01-27T20:39:00.544Z",
+      "created": "2026-01-27T20:39:00.544Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_5",
@@ -310,7 +213,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Searching for Lake Garda hotel"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Lake Garda hotel",
+      "last_updated": "2026-01-27T20:39:00.547Z",
+      "created": "2026-01-27T20:39:00.547Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_6",
@@ -323,7 +229,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Searching for Lake Como accommodation"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Lake Como accommodation",
+      "last_updated": "2026-01-27T20:39:00.549Z",
+      "created": "2026-01-27T20:39:00.549Z"
     },
     {
       "id": "session_a6bcdacd-f04f-4765-bbf9-4b2ade97af18_7",
@@ -336,7 +245,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "a6bcdacd-f04f-4765-bbf9-4b2ade97af18",
-      "activeForm": "Creating final itinerary"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Creating final itinerary",
+      "last_updated": "2026-01-27T20:39:00.552Z",
+      "created": "2026-01-27T20:39:00.552Z"
     },
     {
       "id": "session_italy-2026_1",
@@ -349,7 +261,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Searching for flights"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for flights",
+      "last_updated": "2026-01-27T20:45:58.191Z",
+      "created": "2026-01-27T20:45:58.191Z"
     },
     {
       "id": "session_italy-2026_2",
@@ -362,7 +277,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Searching for car rentals"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for car rentals",
+      "last_updated": "2026-01-27T20:45:58.201Z",
+      "created": "2026-01-27T20:45:58.201Z"
     },
     {
       "id": "session_italy-2026_3",
@@ -375,7 +293,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Searching for Rome apartment"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Rome apartment",
+      "last_updated": "2026-01-27T20:45:58.207Z",
+      "created": "2026-01-27T20:45:58.207Z"
     },
     {
       "id": "session_italy-2026_4",
@@ -388,7 +309,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Searching for Tuscany agriturismo"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Tuscany agriturismo",
+      "last_updated": "2026-01-27T20:45:58.231Z",
+      "created": "2026-01-27T20:45:58.231Z"
     },
     {
       "id": "session_italy-2026_5",
@@ -401,7 +325,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Searching for Lake Garda hotel"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Lake Garda hotel",
+      "last_updated": "2026-01-27T20:45:58.259Z",
+      "created": "2026-01-27T20:45:58.259Z"
     },
     {
       "id": "session_italy-2026_6",
@@ -414,7 +341,10 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Searching for Lake Como accommodation"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Searching for Lake Como accommodation",
+      "last_updated": "2026-01-27T20:45:58.259Z",
+      "created": "2026-01-27T20:45:58.259Z"
     },
     {
       "id": "session_italy-2026_7",
@@ -427,25 +357,27 @@
       "blocks": [],
       "blockedBy": [],
       "project": "italy-2026",
-      "activeForm": "Creating final itinerary"
+      "project_name": "Italy Trip 2026",
+      "activeForm": "Creating final itinerary",
+      "last_updated": "2026-01-27T20:45:58.283Z",
+      "created": "2026-01-27T20:45:58.283Z"
     }
   ],
   "statistics": {
-    "total": 32,
+    "total": 22,
     "by_status": {
-      "pending": 25,
-      "in_progress": 1,
-      "completed": 6,
+      "pending": 17,
+      "in_progress": 0,
+      "completed": 5,
       "failed": 0
     },
     "by_source": {
       "scheduled": 1,
-      "session": 31,
+      "session": 21,
       "project": 0
     },
     "by_project": {
       "4d37c957-5311-4caf-8a6b-395a52d35cfe": 7,
-      "a50f5bbf-239f-4280-91a4-2b6b215de0aa": 10,
       "a6bcdacd-f04f-4765-bbf9-4b2ade97af18": 7,
       "italy-2026": 7
     }

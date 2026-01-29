@@ -793,6 +793,58 @@ body {
     padding: var(--spacing-xs) var(--spacing-sm);
 }
 
+.task-time {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   Task Details Modal
+   ============================================================ */
+.task-detail-row {
+    margin-bottom: var(--spacing-md);
+}
+
+.task-detail-row label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.task-description {
+    background: var(--bg-tertiary);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    white-space: pre-wrap;
+    font-size: var(--font-size-sm);
+}
+
+.task-result {
+    background: var(--bg-tertiary);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.task-result.error {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+.task-detail-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    margin-top: var(--spacing-md);
+}
+
 /* ============================================================
    Quick Fix Panel
    ============================================================ */
