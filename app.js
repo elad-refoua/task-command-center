@@ -563,8 +563,23 @@ function createSkill() {
         return;
     }
 
-    showToast(`יוצר כישור: ${desc}`, 'success');
+    // Queue the skill request
+    const pendingRequests = JSON.parse(localStorage.getItem('pending_skill_requests') || '[]');
+    pendingRequests.push({
+        id: `sr_${Date.now()}`,
+        description: desc,
+        created: new Date().toISOString(),
+        status: 'pending'
+    });
+    localStorage.setItem('pending_skill_requests', JSON.stringify(pendingRequests));
+
+    showToast(`כישור "${desc.substring(0, 30)}..." נשמר ליצירה`, 'success');
     document.getElementById('skillDescription').value = '';
+
+    // Show the pending request in a toast
+    setTimeout(() => {
+        showToast('הכישור ייווצר בסנכרון הבא עם Claude', 'info');
+    }, 1000);
 }
 
 // ============================================================
