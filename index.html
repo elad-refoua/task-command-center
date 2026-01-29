@@ -59,7 +59,26 @@
             <span class="health-icon">✅</span>
             <span class="health-text">בדיקה אחרונה: <span id="lastCheck">טוען...</span></span>
             <span class="health-status" id="healthStatus">תקין</span>
+            <button class="btn btn-health-check" id="runHealthCheckBtn" title="הרץ בדיקה עכשיו">
+                🔍 בדוק עכשיו
+            </button>
         </section>
+
+        <!-- Health Check Results Modal -->
+        <div class="health-results-modal" id="healthResultsModal">
+            <div class="health-results-content">
+                <div class="health-results-header">
+                    <h3>📊 תוצאות בדיקה</h3>
+                    <button class="modal-close" id="closeHealthResults">&times;</button>
+                </div>
+                <div class="health-results-body" id="healthResultsBody">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <span>מריץ בדיקה...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Filter Bar -->
         <section class="filter-bar">
@@ -83,32 +102,37 @@
             </div>
         </section>
 
-        <!-- Tasks Container -->
-        <section class="content-grid">
-            <!-- Tasks List -->
-            <div class="tasks-container">
-                <div class="section-header">
-                    <h2>משימות</h2>
+        <!-- Trello-Style Board -->
+        <section class="board-section">
+            <div class="board-header">
+                <h2>📋 לוח משימות</h2>
+                <div class="board-actions">
                     <button class="btn btn-primary" id="newTaskBtn">+ משימה חדשה</button>
-                </div>
-                <div class="tasks-list" id="tasksList">
-                    <!-- Tasks will be rendered here -->
-                    <div class="loading-spinner" id="tasksLoading">
-                        <div class="spinner"></div>
-                        <span>טוען משימות...</span>
-                    </div>
+                    <button class="btn btn-secondary" id="toggleViewBtn" title="החלף תצוגה">⊞</button>
                 </div>
             </div>
+            <div class="board-container" id="boardContainer">
+                <!-- Columns will be rendered here -->
+                <div class="loading-spinner" id="tasksLoading">
+                    <div class="spinner"></div>
+                    <span>טוען משימות...</span>
+                </div>
+            </div>
+        </section>
 
-            <!-- Quick Fix Sidebar -->
-            <aside class="quick-fix-panel">
+        <!-- Quick Fix Panel (Floating) -->
+        <aside class="quick-fix-panel floating" id="quickFixPanel">
+            <div class="quick-fix-header">
                 <h3>⚡ תיקון מהיר</h3>
+                <button class="btn btn-icon btn-small" id="toggleQuickFix">−</button>
+            </div>
+            <div class="quick-fix-body">
                 <p class="panel-description">שלח משימה מיידית לקלוד</p>
                 <div class="quick-fix-form">
                     <textarea
                         id="quickFixInput"
                         placeholder="תאר את המשימה..."
-                        rows="4"
+                        rows="3"
                     ></textarea>
                     <div class="quick-fix-options">
                         <select id="quickFixAgent" class="filter-select">
@@ -122,15 +146,14 @@
                         🚀 שלח עכשיו
                     </button>
                 </div>
-
                 <div class="recent-fixes">
                     <h4>אחרונים:</h4>
                     <ul id="recentFixes" class="recent-list">
                         <!-- Recent quick fixes -->
                     </ul>
                 </div>
-            </aside>
-        </section>
+            </div>
+        </aside>
 
         <!-- Agents & Skills Section -->
         <section class="bottom-panels">
@@ -138,58 +161,40 @@
             <div class="panel agents-panel">
                 <div class="panel-header">
                     <h3>🤖 סוכנים</h3>
-                    <button class="btn btn-small" id="newAgentBtn">+ חדש</button>
+                    <span class="drag-hint">גרור לכרטיס משימה להקצאה</span>
                 </div>
                 <div class="agents-list" id="agentsList">
-                    <div class="agent-card">
-                        <span class="agent-icon">🔍</span>
-                        <div class="agent-info">
-                            <span class="agent-name">Explore</span>
-                            <span class="agent-desc">חיפוש בקוד</span>
-                        </div>
-                        <span class="agent-status idle">פנוי</span>
-                    </div>
-                    <div class="agent-card">
-                        <span class="agent-icon">📋</span>
-                        <div class="agent-info">
-                            <span class="agent-name">Plan</span>
-                            <span class="agent-desc">תכנון פתרונות</span>
-                        </div>
-                        <span class="agent-status idle">פנוי</span>
-                    </div>
-                    <div class="agent-card">
-                        <span class="agent-icon">🌐</span>
-                        <div class="agent-info">
-                            <span class="agent-name">Browser</span>
-                            <span class="agent-desc">אוטומציה בדפדפן</span>
-                        </div>
-                        <span class="agent-status idle">פנוי</span>
-                    </div>
+                    <!-- Agents will be rendered here with draggable -->
                 </div>
             </div>
 
             <!-- Skills Panel -->
             <div class="panel skills-panel">
                 <div class="panel-header">
-                    <h3>⚡ יצירת כישור</h3>
+                    <h3>⚡ כישורים</h3>
+                    <span class="drag-hint">גרור לכרטיס משימה להקצאה</span>
                 </div>
                 <div class="skill-creator">
                     <input
                         type="text"
                         id="skillDescription"
-                        placeholder="תאר את הכישור שאתה רוצה..."
+                        placeholder="תאר כישור חדש..."
                         class="skill-input"
                     >
-                    <button class="btn btn-primary" id="createSkillBtn">
-                        ✨ צור עם קלוד
+                    <button class="btn btn-primary btn-small" id="createSkillBtn">
+                        ✨ צור
                     </button>
                 </div>
                 <div class="skills-browser">
-                    <h4>כישורים קיימים (<span id="skillsCount">0</span>):</h4>
-                    <input type="text" id="skillSearch" placeholder="🔍 חפש כישור..." class="search-input small">
-                    <ul id="skillsList" class="skills-list">
-                        <!-- Skills will be rendered here -->
-                    </ul>
+                    <input type="text" id="skillSearch" placeholder="🔍 חפש..." class="search-input small">
+                    <div class="skills-list-container">
+                        <ul id="skillsList" class="skills-list">
+                            <!-- Skills will be rendered here with draggable -->
+                        </ul>
+                    </div>
+                    <div class="skills-count">
+                        <span id="skillsCount">0</span> כישורים
+                    </div>
                 </div>
             </div>
         </section>

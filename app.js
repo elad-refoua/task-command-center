@@ -18,7 +18,10 @@ const state = {
         status: 'all',
         search: ''
     },
-    recentFixes: []
+    recentFixes: [],
+    viewMode: 'board', // 'board' or 'list'
+    healthCheckRunning: false,
+    dragData: null // For tracking skill/agent drags
 };
 
 // ============================================================
@@ -113,6 +116,9 @@ async function loadTasks() {
 
         const data = await response.json();
         state.tasks = data.tasks || [];
+
+        // Load saved task assignments from localStorage
+        loadTaskAssignments();
 
         // Update statistics
         updateStatistics(data.statistics);
@@ -219,40 +225,144 @@ function hideLoading() {
 // ============================================================
 
 /**
- * Render tasks list
+ * Render tasks - Board or List view
  */
 function renderTasks() {
-    const container = document.getElementById('tasksList');
+    const container = document.getElementById('boardContainer');
     const filteredTasks = filterTasks(state.tasks);
 
     if (filteredTasks.length === 0) {
         container.innerHTML = `
-            <div class="empty-state">
+            <div class="empty-state" style="width: 100%; text-align: center; padding: 40px;">
                 <p>אין משימות להציג</p>
             </div>
         `;
         return;
     }
 
-    // Group tasks by source
-    const grouped = groupTasksBySource(filteredTasks);
+    if (state.viewMode === 'board') {
+        renderBoardView(filteredTasks);
+    } else {
+        renderListView(filteredTasks);
+    }
+
+    // Setup drag and drop for tasks and skill/agent assignment
+    setupDragAndDrop();
+    setupSkillAgentDragAndDrop();
+}
+
+/**
+ * Render Trello-style board view
+ */
+function renderBoardView(tasks) {
+    const container = document.getElementById('boardContainer');
+
+    // Group tasks by session/project
+    const grouped = groupTasksBySession(tasks);
 
     let html = '';
 
-    for (const [source, tasks] of Object.entries(grouped)) {
-        const sourceInfo = getSourceInfo(source);
+    for (const [sessionId, sessionData] of Object.entries(grouped)) {
+        const columnClass = sessionData.source || 'session';
         html += `
-            <div class="task-group">
-                <h4 class="task-group-title">${sourceInfo.icon} ${sourceInfo.text}</h4>
-                ${tasks.map(task => renderTaskCard(task)).join('')}
+            <div class="board-column ${columnClass}" data-session="${sessionId}">
+                <div class="column-header">
+                    <span class="column-title">
+                        ${sessionData.icon} ${sessionData.name}
+                    </span>
+                    <span class="column-count">${sessionData.tasks.length}</span>
+                </div>
+                <div class="column-cards" data-session="${sessionId}">
+                    ${sessionData.tasks.map(task => renderTaskCard(task)).join('')}
+                </div>
+                <div class="column-footer">
+                    <button class="add-task-btn" onclick="addTaskToSession('${sessionId}')">
+                        + הוסף משימה
+                    </button>
+                </div>
             </div>
         `;
     }
 
     container.innerHTML = html;
+}
 
-    // Setup drag and drop
-    setupDragAndDrop();
+/**
+ * Render list view (fallback)
+ */
+function renderListView(tasks) {
+    const container = document.getElementById('boardContainer');
+    const grouped = groupTasksBySource(tasks);
+
+    let html = '<div class="tasks-container" style="width: 100%;">';
+
+    for (const [source, sourceTasks] of Object.entries(grouped)) {
+        const sourceInfo = getSourceInfo(source);
+        html += `
+            <div class="task-group">
+                <h4 class="task-group-title">${sourceInfo.icon} ${sourceInfo.text}</h4>
+                ${sourceTasks.map(task => renderTaskCard(task)).join('')}
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+/**
+ * Group tasks by session/project for Trello view
+ */
+function groupTasksBySession(tasks) {
+    const groups = {};
+
+    // First, create scheduled column
+    const scheduledTasks = tasks.filter(t => t.source === 'scheduled');
+    if (scheduledTasks.length > 0) {
+        groups['_scheduled'] = {
+            name: 'מתוזמנות',
+            icon: '📅',
+            source: 'scheduled',
+            tasks: scheduledTasks
+        };
+    }
+
+    // Group by project/session
+    tasks.filter(t => t.source !== 'scheduled').forEach(task => {
+        const sessionId = task.session_id || task.project || task.source || 'general';
+
+        if (!groups[sessionId]) {
+            groups[sessionId] = {
+                name: getSessionName(task),
+                icon: getSessionIcon(task),
+                source: task.source,
+                tasks: []
+            };
+        }
+        groups[sessionId].tasks.push(task);
+    });
+
+    return groups;
+}
+
+/**
+ * Get display name for session
+ */
+function getSessionName(task) {
+    if (task.project) return task.project;
+    if (task.session_id) return task.session_id.replace(/-/g, ' ');
+    if (task.source === 'session') return 'סשן נוכחי';
+    if (task.source === 'project') return 'פרויקט';
+    return 'כללי';
+}
+
+/**
+ * Get icon for session type
+ */
+function getSessionIcon(task) {
+    if (task.source === 'project') return '📁';
+    if (task.source === 'session') return '📋';
+    return '📄';
 }
 
 /**
@@ -260,24 +370,50 @@ function renderTasks() {
  */
 function renderTaskCard(task) {
     const statusInfo = getStatusInfo(task.status);
-    const sourceInfo = getSourceInfo(task.source);
+
+    // Build assignment badges
+    let assignmentBadges = '';
+    if (task.assigned_skill || task.assigned_agent) {
+        assignmentBadges = '<div class="task-assignments">';
+        if (task.assigned_skill) {
+            assignmentBadges += `
+                <span class="assignment-badge skill">
+                    ⚡ ${escapeHtml(task.assigned_skill)}
+                    <span class="remove-badge" onclick="removeAssignment('${task.id}', 'skill')">×</span>
+                </span>
+            `;
+        }
+        if (task.assigned_agent) {
+            assignmentBadges += `
+                <span class="assignment-badge agent">
+                    🤖 ${escapeHtml(task.assigned_agent)}
+                    <span class="remove-badge" onclick="removeAssignment('${task.id}', 'agent')">×</span>
+                </span>
+            `;
+        }
+        assignmentBadges += '</div>';
+    }
 
     return `
-        <div class="task-card status-${task.status}" draggable="true" data-task-id="${task.id}">
+        <div class="task-card status-${task.status}"
+             draggable="true"
+             data-task-id="${task.id}"
+             ondragover="handleTaskDragOver(event)"
+             ondragleave="handleTaskDragLeave(event)"
+             ondrop="handleTaskDrop(event)">
             <div class="task-header">
-                <span class="task-source">${sourceInfo.icon} ${sourceInfo.text}</span>
                 <span class="task-status ${statusInfo.class}">${statusInfo.icon} ${statusInfo.text}</span>
             </div>
             <div class="task-title">${escapeHtml(task.subject)}</div>
-            ${task.project ? `<div class="task-meta"><span>📁 ${escapeHtml(task.project)}</span></div>` : ''}
             ${task.last_result && task.status === 'failed' ?
-                `<div class="task-error">❌ ${escapeHtml(task.last_result.substring(0, 100))}</div>` : ''}
+                `<div class="task-error">❌ ${escapeHtml(task.last_result.substring(0, 80))}...</div>` : ''}
+            ${assignmentBadges}
             <div class="task-actions">
                 ${task.status === 'failed' ?
-                    `<button class="btn btn-small btn-primary" onclick="retryTask('${task.id}')">🔄 נסה שוב</button>` : ''}
-                <button class="btn btn-small btn-secondary" onclick="editTask('${task.id}')">✏️ ערוך</button>
+                    `<button class="btn btn-small btn-primary" onclick="retryTask('${task.id}')">🔄</button>` : ''}
+                <button class="btn btn-small btn-secondary" onclick="editTask('${task.id}')">✏️</button>
                 ${task.status !== 'completed' ?
-                    `<button class="btn btn-small btn-secondary" onclick="startTask('${task.id}')">▶️ התחל</button>` : ''}
+                    `<button class="btn btn-small btn-secondary" onclick="startTask('${task.id}')">▶️</button>` : ''}
             </div>
         </div>
     `;
@@ -336,42 +472,207 @@ function groupTasksBySource(tasks) {
 }
 
 // ============================================================
-// DRAG AND DROP
+// DRAG AND DROP (Tasks)
 // ============================================================
 
 function setupDragAndDrop() {
     const cards = document.querySelectorAll('.task-card');
 
     cards.forEach(card => {
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
-        card.addEventListener('dragover', handleDragOver);
-        card.addEventListener('drop', handleDrop);
+        card.addEventListener('dragstart', handleTaskDragStart);
+        card.addEventListener('dragend', handleTaskDragEnd);
+    });
+
+    // Setup column drop zones
+    const columns = document.querySelectorAll('.column-cards');
+    columns.forEach(column => {
+        column.addEventListener('dragover', handleColumnDragOver);
+        column.addEventListener('drop', handleColumnDrop);
     });
 }
 
-function handleDragStart(e) {
+function handleTaskDragStart(e) {
     e.target.classList.add('dragging');
-    e.dataTransfer.setData('text/plain', e.target.dataset.taskId);
+    state.dragData = {
+        type: 'task',
+        id: e.target.dataset.taskId
+    };
+    e.dataTransfer.setData('text/plain', JSON.stringify(state.dragData));
+    e.dataTransfer.effectAllowed = 'move';
 }
 
-function handleDragEnd(e) {
+function handleTaskDragEnd(e) {
     e.target.classList.remove('dragging');
+    state.dragData = null;
 }
 
-function handleDragOver(e) {
+function handleColumnDragOver(e) {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
 }
 
-function handleDrop(e) {
+function handleColumnDrop(e) {
     e.preventDefault();
-    const draggedId = e.dataTransfer.getData('text/plain');
-    const dropTarget = e.target.closest('.task-card');
+    const data = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
 
-    if (dropTarget && draggedId !== dropTarget.dataset.taskId) {
-        // Reorder tasks (visual only for now)
-        showToast('משימה הוזזה', 'success');
+    if (data.type === 'task') {
+        const taskId = data.id;
+        const targetSession = e.currentTarget.dataset.session;
+        showToast(`משימה הועברה ל-${targetSession}`, 'success');
     }
+}
+
+// ============================================================
+// DRAG AND DROP (Skills & Agents to Tasks)
+// ============================================================
+
+function setupSkillAgentDragAndDrop() {
+    // Make skills draggable
+    const skillItems = document.querySelectorAll('.skills-list li');
+    skillItems.forEach(item => {
+        item.draggable = true;
+        item.addEventListener('dragstart', handleSkillDragStart);
+        item.addEventListener('dragend', handleSkillDragEnd);
+    });
+
+    // Make agents draggable
+    const agentCards = document.querySelectorAll('.agent-card');
+    agentCards.forEach(card => {
+        card.draggable = true;
+        card.addEventListener('dragstart', handleAgentDragStart);
+        card.addEventListener('dragend', handleAgentDragEnd);
+    });
+}
+
+function handleSkillDragStart(e) {
+    const skillId = e.target.dataset.skillId || e.target.querySelector('.skill-name')?.textContent;
+    state.dragData = {
+        type: 'skill',
+        id: skillId
+    };
+    e.target.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', JSON.stringify(state.dragData));
+    e.dataTransfer.effectAllowed = 'copy';
+}
+
+function handleSkillDragEnd(e) {
+    e.target.classList.remove('dragging');
+    state.dragData = null;
+    // Remove all drop-target highlights
+    document.querySelectorAll('.task-card.drop-target').forEach(card => {
+        card.classList.remove('drop-target');
+    });
+}
+
+function handleAgentDragStart(e) {
+    const agentId = e.target.dataset.agentId || e.target.querySelector('.agent-name')?.textContent;
+    state.dragData = {
+        type: 'agent',
+        id: agentId
+    };
+    e.target.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', JSON.stringify(state.dragData));
+    e.dataTransfer.effectAllowed = 'copy';
+}
+
+function handleAgentDragEnd(e) {
+    e.target.classList.remove('dragging');
+    state.dragData = null;
+    // Remove all drop-target highlights
+    document.querySelectorAll('.task-card.drop-target').forEach(card => {
+        card.classList.remove('drop-target');
+    });
+}
+
+// Task drop handlers (for receiving skills/agents)
+function handleTaskDragOver(e) {
+    e.preventDefault();
+    if (state.dragData && (state.dragData.type === 'skill' || state.dragData.type === 'agent')) {
+        e.currentTarget.classList.add('drop-target');
+        e.dataTransfer.dropEffect = 'copy';
+    }
+}
+
+function handleTaskDragLeave(e) {
+    e.currentTarget.classList.remove('drop-target');
+}
+
+function handleTaskDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('drop-target');
+
+    const data = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+    const taskId = e.currentTarget.dataset.taskId;
+
+    if (data.type === 'skill') {
+        assignSkillToTask(taskId, data.id);
+    } else if (data.type === 'agent') {
+        assignAgentToTask(taskId, data.id);
+    }
+}
+
+function assignSkillToTask(taskId, skillId) {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (task) {
+        task.assigned_skill = skillId;
+        saveTaskAssignment(taskId, 'skill', skillId);
+        renderTasks();
+        showToast(`כישור "${skillId}" הוקצה למשימה`, 'success');
+    }
+}
+
+function assignAgentToTask(taskId, agentId) {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (task) {
+        task.assigned_agent = agentId;
+        saveTaskAssignment(taskId, 'agent', agentId);
+        renderTasks();
+        showToast(`סוכן "${agentId}" הוקצה למשימה`, 'success');
+    }
+}
+
+function removeAssignment(taskId, type) {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (task) {
+        if (type === 'skill') {
+            delete task.assigned_skill;
+        } else if (type === 'agent') {
+            delete task.assigned_agent;
+        }
+        saveTaskAssignment(taskId, type, null);
+        renderTasks();
+        showToast('הקצאה הוסרה', 'info');
+    }
+}
+
+function saveTaskAssignment(taskId, type, value) {
+    // Save to localStorage for persistence
+    const assignments = JSON.parse(localStorage.getItem('task_assignments') || '{}');
+    if (!assignments[taskId]) assignments[taskId] = {};
+
+    if (value === null) {
+        delete assignments[taskId][type];
+    } else {
+        assignments[taskId][type] = value;
+    }
+
+    localStorage.setItem('task_assignments', JSON.stringify(assignments));
+}
+
+function loadTaskAssignments() {
+    const assignments = JSON.parse(localStorage.getItem('task_assignments') || '{}');
+
+    state.tasks.forEach(task => {
+        if (assignments[task.id]) {
+            if (assignments[task.id].skill) {
+                task.assigned_skill = assignments[task.id].skill;
+            }
+            if (assignments[task.id].agent) {
+                task.assigned_agent = assignments[task.id].agent;
+            }
+        }
+    });
 }
 
 // ============================================================
@@ -396,6 +697,188 @@ function startTask(taskId) {
     if (!task) return;
 
     showToast(`מתחיל משימה: ${task.subject}`, 'success');
+}
+
+function addTaskToSession(sessionId) {
+    // Open the new task modal with session pre-selected
+    openModal('newTaskModal');
+    // Could set a hidden field or state for the target session
+    showToast(`הוספת משימה ל-${sessionId}`, 'info');
+}
+
+// ============================================================
+// HEALTH CHECK
+// ============================================================
+
+async function runHealthCheck() {
+    if (state.healthCheckRunning) return;
+
+    state.healthCheckRunning = true;
+    const btn = document.getElementById('runHealthCheckBtn');
+    const modal = document.getElementById('healthResultsModal');
+    const resultsBody = document.getElementById('healthResultsBody');
+
+    // Update button state
+    btn.classList.add('loading');
+    btn.innerHTML = '⏳ בודק...';
+
+    // Show modal with loading
+    modal.classList.add('open');
+    resultsBody.innerHTML = `
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span>מריץ בדיקת בריאות...</span>
+        </div>
+    `;
+
+    // Simulate health check (in real implementation, this would call the backend)
+    try {
+        // Analyze current tasks
+        const results = analyzeTaskHealth();
+
+        // Display results
+        resultsBody.innerHTML = renderHealthResults(results);
+
+        // Update health banner
+        updateHealthBanner(results);
+
+        showToast('בדיקת בריאות הושלמה', 'success');
+    } catch (error) {
+        resultsBody.innerHTML = `
+            <div class="health-result-item">
+                <span class="health-result-label">שגיאה</span>
+                <span class="health-result-value error">${escapeHtml(error.message)}</span>
+            </div>
+        `;
+        showToast('שגיאה בבדיקת בריאות', 'error');
+    } finally {
+        state.healthCheckRunning = false;
+        btn.classList.remove('loading');
+        btn.innerHTML = '🔍 בדוק עכשיו';
+    }
+}
+
+function analyzeTaskHealth() {
+    const tasks = state.tasks;
+    const now = new Date();
+
+    const results = {
+        total: tasks.length,
+        pending: tasks.filter(t => t.status === 'pending').length,
+        in_progress: tasks.filter(t => t.status === 'in_progress').length,
+        completed: tasks.filter(t => t.status === 'completed').length,
+        failed: tasks.filter(t => t.status === 'failed').length,
+        failedTasks: tasks.filter(t => t.status === 'failed'),
+        timestamp: now.toISOString(),
+        fixesAttempted: 0,
+        fixesSuccessful: 0,
+        issues: []
+    };
+
+    // Analyze failed tasks
+    results.failedTasks.forEach(task => {
+        if (task.last_result) {
+            // Check for known patterns
+            if (task.last_result.includes('claude') && task.last_result.includes('not')) {
+                results.issues.push({
+                    task: task.subject,
+                    issue: 'Claude path not found',
+                    suggestion: 'Use full path: C:\\Users\\user\\.local\\bin\\claude.exe'
+                });
+            } else if (task.last_result.includes('permission')) {
+                results.issues.push({
+                    task: task.subject,
+                    issue: 'Permission denied',
+                    suggestion: 'Run as administrator or check file permissions'
+                });
+            } else {
+                results.issues.push({
+                    task: task.subject,
+                    issue: 'Unknown error',
+                    suggestion: task.last_result.substring(0, 100)
+                });
+            }
+        }
+    });
+
+    return results;
+}
+
+function renderHealthResults(results) {
+    let html = `
+        <div class="health-result-item">
+            <span class="health-result-label">סה״כ משימות</span>
+            <span class="health-result-value">${results.total}</span>
+        </div>
+        <div class="health-result-item">
+            <span class="health-result-label">ממתינות</span>
+            <span class="health-result-value">${results.pending}</span>
+        </div>
+        <div class="health-result-item">
+            <span class="health-result-label">בביצוע</span>
+            <span class="health-result-value warning">${results.in_progress}</span>
+        </div>
+        <div class="health-result-item">
+            <span class="health-result-label">הושלמו</span>
+            <span class="health-result-value success">${results.completed}</span>
+        </div>
+        <div class="health-result-item">
+            <span class="health-result-label">נכשלו</span>
+            <span class="health-result-value ${results.failed > 0 ? 'error' : ''}">${results.failed}</span>
+        </div>
+    `;
+
+    if (results.issues.length > 0) {
+        html += `
+            <div class="health-fixes-list">
+                <h4>⚠️ בעיות שזוהו:</h4>
+                ${results.issues.map(issue => `
+                    <div class="fix-item">
+                        <span>📋</span>
+                        <div>
+                            <strong>${escapeHtml(issue.task)}</strong><br>
+                            <small>${escapeHtml(issue.issue)}: ${escapeHtml(issue.suggestion)}</small>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="health-fixes-list" style="background: #D1FAE5;">
+                <h4>✅ כל המשימות תקינות!</h4>
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="health-result-item" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+            <span class="health-result-label">זמן בדיקה</span>
+            <span class="health-result-value">${formatDate(results.timestamp)}</span>
+        </div>
+    `;
+
+    return html;
+}
+
+function updateHealthBanner(results) {
+    const banner = document.getElementById('healthBanner');
+    const status = document.getElementById('healthStatus');
+    const icon = document.querySelector('.health-icon');
+    const lastCheck = document.getElementById('lastCheck');
+
+    lastCheck.textContent = 'עכשיו';
+
+    if (results.failed > 0) {
+        banner.classList.add('warning');
+        banner.classList.remove('error');
+        status.textContent = `${results.failed} נכשלו`;
+        icon.textContent = '⚠️';
+    } else {
+        banner.classList.remove('warning', 'error');
+        status.textContent = 'תקין';
+        icon.textContent = '✅';
+    }
 }
 
 // ============================================================
@@ -490,12 +973,18 @@ function renderSkills() {
 
     if (!container) return;
 
-    container.innerHTML = state.skills.slice(0, 15).map(skill => `
-        <li onclick="selectSkill('${escapeHtml(skill.id)}')" title="${escapeHtml(skill.description)}">
-            <span class="skill-name">${escapeHtml(skill.name)}</span>
-            <span class="skill-desc">${escapeHtml(skill.description.substring(0, 40))}...</span>
+    container.innerHTML = state.skills.slice(0, 20).map(skill => `
+        <li draggable="true"
+            data-skill-id="${escapeHtml(skill.id)}"
+            onclick="selectSkill('${escapeHtml(skill.id)}')"
+            title="גרור למשימה להקצאה&#10;${escapeHtml(skill.description || '')}">
+            <span class="skill-name">⚡ ${escapeHtml(skill.name)}</span>
+            <span class="skill-desc">${escapeHtml((skill.description || '').substring(0, 30))}</span>
         </li>
     `).join('');
+
+    // Setup drag events after rendering
+    setupSkillAgentDragAndDrop();
 }
 
 function selectSkill(skillId) {
@@ -537,7 +1026,11 @@ function renderAgents() {
     if (!container) return;
 
     container.innerHTML = state.agents.map(agent => `
-        <div class="agent-card" onclick="launchAgent('${escapeHtml(agent.id)}')">
+        <div class="agent-card"
+             draggable="true"
+             data-agent-id="${escapeHtml(agent.id)}"
+             onclick="launchAgent('${escapeHtml(agent.id)}')"
+             title="גרור למשימה להקצאה">
             <span class="agent-icon">${agent.icon || '🤖'}</span>
             <div class="agent-info">
                 <span class="agent-name">${escapeHtml(agent.name)}</span>
@@ -546,6 +1039,9 @@ function renderAgents() {
             <span class="agent-status idle">פנוי</span>
         </div>
     `).join('');
+
+    // Setup drag events after rendering
+    setupSkillAgentDragAndDrop();
 }
 
 function launchAgent(agentId) {
@@ -661,6 +1157,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Quick fix
     document.getElementById('quickFixBtn').addEventListener('click', submitQuickFix);
 
+    // Toggle quick fix panel
+    const toggleQuickFix = document.getElementById('toggleQuickFix');
+    if (toggleQuickFix) {
+        toggleQuickFix.addEventListener('click', () => {
+            const panel = document.getElementById('quickFixPanel');
+            panel.classList.toggle('collapsed');
+            toggleQuickFix.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+        });
+    }
+
     // New task modal
     document.getElementById('newTaskBtn').addEventListener('click', () => openModal('newTaskModal'));
     document.getElementById('closeNewTaskModal').addEventListener('click', () => closeModal('newTaskModal'));
@@ -682,16 +1188,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const search = e.target.value.toLowerCase();
         const filtered = state.skills.filter(s =>
             s.name.toLowerCase().includes(search) ||
-            s.description.toLowerCase().includes(search)
+            (s.description || '').toLowerCase().includes(search)
         );
         const container = document.getElementById('skillsList');
         container.innerHTML = filtered.map(skill => `
-            <li onclick="selectSkill('${skill.name}')">
-                <span class="skill-name">${skill.name}</span>
-                <span class="skill-desc">${skill.description}</span>
+            <li draggable="true"
+                data-skill-id="${escapeHtml(skill.id)}"
+                onclick="selectSkill('${escapeHtml(skill.id)}')"
+                title="גרור למשימה להקצאה">
+                <span class="skill-name">⚡ ${escapeHtml(skill.name)}</span>
+                <span class="skill-desc">${escapeHtml((skill.description || '').substring(0, 30))}</span>
             </li>
         `).join('');
+        setupSkillAgentDragAndDrop();
     });
+
+    // Health check button
+    const healthCheckBtn = document.getElementById('runHealthCheckBtn');
+    if (healthCheckBtn) {
+        healthCheckBtn.addEventListener('click', runHealthCheck);
+    }
+
+    // Close health results modal
+    const closeHealthResults = document.getElementById('closeHealthResults');
+    if (closeHealthResults) {
+        closeHealthResults.addEventListener('click', () => {
+            document.getElementById('healthResultsModal').classList.remove('open');
+        });
+    }
+
+    // View toggle (board/list)
+    const toggleViewBtn = document.getElementById('toggleViewBtn');
+    if (toggleViewBtn) {
+        toggleViewBtn.addEventListener('click', () => {
+            state.viewMode = state.viewMode === 'board' ? 'list' : 'board';
+            toggleViewBtn.textContent = state.viewMode === 'board' ? '⊞' : '☰';
+            toggleViewBtn.title = state.viewMode === 'board' ? 'תצוגת רשימה' : 'תצוגת לוח';
+            renderTasks();
+            showToast(state.viewMode === 'board' ? 'תצוגת לוח' : 'תצוגת רשימה', 'info');
+        });
+    }
 
     // Close sidebar on outside click (mobile)
     document.addEventListener('click', (e) => {
@@ -701,6 +1237,27 @@ document.addEventListener('DOMContentLoaded', () => {
             !sidebar.contains(e.target) &&
             !menuToggle.contains(e.target)) {
             sidebar.classList.remove('open');
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Escape to close modals
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal.open, .health-results-modal.open').forEach(modal => {
+                modal.classList.remove('open');
+            });
+        }
+        // Ctrl+R to refresh
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            loadTasks();
+            showToast('מרענן...', 'info');
+        }
+        // Ctrl+H to run health check
+        if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+            e.preventDefault();
+            runHealthCheck();
         }
     });
 
@@ -720,3 +1277,10 @@ window.startTask = startTask;
 window.selectSkill = selectSkill;
 window.openModal = openModal;
 window.closeModal = closeModal;
+window.removeAssignment = removeAssignment;
+window.addTaskToSession = addTaskToSession;
+window.handleTaskDragOver = handleTaskDragOver;
+window.handleTaskDragLeave = handleTaskDragLeave;
+window.handleTaskDrop = handleTaskDrop;
+window.runHealthCheck = runHealthCheck;
+window.launchAgent = launchAgent;

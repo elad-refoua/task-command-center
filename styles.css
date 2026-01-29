@@ -276,7 +276,409 @@ body {
 }
 
 /* ============================================================
-   Content Grid
+   Health Check Button & Modal
+   ============================================================ */
+.btn-health-check {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    min-height: 36px;
+}
+
+.btn-health-check:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-health-check.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.health-results-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 250;
+    padding: var(--spacing-md);
+}
+
+.health-results-modal.open {
+    display: flex;
+}
+
+.health-results-content {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.health-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    color: white;
+}
+
+.health-results-header h3 {
+    margin: 0;
+}
+
+.health-results-header .modal-close {
+    color: white;
+    background: rgba(255,255,255,0.2);
+}
+
+.health-results-body {
+    padding: var(--spacing-md);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.health-result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.health-result-item:last-child {
+    border-bottom: none;
+}
+
+.health-result-label {
+    color: var(--text-secondary);
+}
+
+.health-result-value {
+    font-weight: 600;
+}
+
+.health-result-value.success { color: var(--success-color); }
+.health-result-value.warning { color: var(--warning-color); }
+.health-result-value.error { color: var(--danger-color); }
+
+.health-fixes-list {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+}
+
+.health-fixes-list h4 {
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+}
+
+.fix-item {
+    padding: var(--spacing-xs) 0;
+    font-size: var(--font-size-sm);
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* ============================================================
+   Trello-Style Board
+   ============================================================ */
+.board-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.board-header h2 {
+    font-size: var(--font-size-lg);
+}
+
+.board-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.board-container {
+    display: flex;
+    gap: var(--spacing-md);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-md);
+    min-height: 400px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but keep functionality */
+.board-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.board-container::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.board-container::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.board-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Board Column (Trello-style) */
+.board-column {
+    flex: 0 0 280px;
+    min-width: 280px;
+    max-width: 280px;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-lg);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 350px);
+}
+
+.column-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-title {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.column-count {
+    background: var(--primary-color);
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.column-cards {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.column-cards::-webkit-scrollbar {
+    width: 6px;
+}
+
+.column-cards::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.column-footer {
+    padding: var(--spacing-sm);
+    border-top: 1px solid var(--border-color);
+}
+
+.add-task-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-family: var(--font-family);
+    transition: all 0.2s;
+}
+
+.add-task-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Column color variants */
+.board-column.scheduled .column-header { border-top: 3px solid #F59E0B; }
+.board-column.session .column-header { border-top: 3px solid #6366F1; }
+.board-column.project .column-header { border-top: 3px solid #10B981; }
+
+/* ============================================================
+   Task Card (Board Version)
+   ============================================================ */
+.task-card {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    border-right: 4px solid var(--pending-color);
+    cursor: grab;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.task-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.task-card.drop-target {
+    background: #E0E7FF;
+    border: 2px dashed var(--primary-color);
+}
+
+.task-card.status-completed { border-right-color: var(--success-color); }
+.task-card.status-failed { border-right-color: var(--danger-color); }
+.task-card.status-in_progress { border-right-color: var(--warning-color); }
+
+/* Assigned badges on task cards */
+.task-assignments {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-sm);
+}
+
+.assignment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.assignment-badge.skill {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.assignment-badge.agent {
+    background: #E0E7FF;
+    color: #3730A3;
+}
+
+.assignment-badge .remove-badge {
+    cursor: pointer;
+    opacity: 0.6;
+    margin-right: 2px;
+}
+
+.assignment-badge .remove-badge:hover {
+    opacity: 1;
+}
+
+/* ============================================================
+   Quick Fix Panel (Floating)
+   ============================================================ */
+.quick-fix-panel.floating {
+    position: fixed;
+    bottom: var(--spacing-md);
+    left: var(--spacing-md);
+    width: 300px;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+    transition: transform 0.3s ease;
+}
+
+.quick-fix-panel.floating.collapsed {
+    transform: translateY(calc(100% - 50px));
+}
+
+.quick-fix-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.quick-fix-header h3 {
+    margin: 0;
+    font-size: var(--font-size-base);
+}
+
+.quick-fix-body {
+    padding: var(--spacing-md);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* ============================================================
+   Drag Hints
+   ============================================================ */
+.drag-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ============================================================
+   Draggable Skills & Agents
+   ============================================================ */
+.skills-list li,
+.agent-card {
+    cursor: grab;
+    transition: all 0.2s;
+}
+
+.skills-list li:active,
+.agent-card:active {
+    cursor: grabbing;
+}
+
+.skills-list li.dragging,
+.agent-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.skills-list-container {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: var(--spacing-sm);
+}
+
+.skills-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: left;
+}
+
+/* ============================================================
+   Content Grid (Legacy - Keep for compatibility)
    ============================================================ */
 .content-grid {
     display: grid;
@@ -827,6 +1229,17 @@ body {
     .main-content {
         margin-right: var(--sidebar-width);
     }
+
+    /* Board adjustments for tablet */
+    .board-column {
+        flex: 0 0 300px;
+        min-width: 300px;
+        max-width: 300px;
+    }
+
+    .quick-fix-panel.floating {
+        width: 320px;
+    }
 }
 
 /* ============================================================
@@ -847,6 +1260,158 @@ body {
 }
 
 /* ============================================================
+   Empty States
+   ============================================================ */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    margin-bottom: var(--spacing-md);
+}
+
+/* ============================================================
+   Task Error Display
+   ============================================================ */
+.task-error {
+    background: #FEF2F2;
+    color: #991B1B;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: 12px;
+    margin-top: var(--spacing-xs);
+    word-break: break-word;
+}
+
+/* ============================================================
+   Task Group (List View)
+   ============================================================ */
+.task-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.task-group-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* ============================================================
+   Hover Effects & Transitions
+   ============================================================ */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.task-card:focus-within {
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+/* Better hover states for skills/agents */
+.agent-card:hover {
+    background: var(--bg-secondary);
+    transform: translateX(-2px);
+}
+
+.skills-list li:hover {
+    transform: translateX(-2px);
+}
+
+/* ============================================================
+   Mobile Improvements
+   ============================================================ */
+@media (max-width: 767px) {
+    .board-column {
+        flex: 0 0 85vw;
+        min-width: 85vw;
+        max-width: 85vw;
+    }
+
+    .quick-fix-panel.floating {
+        left: var(--spacing-sm);
+        right: var(--spacing-sm);
+        width: auto;
+    }
+
+    .health-banner {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+
+    .btn-health-check {
+        width: 100%;
+        margin-top: var(--spacing-xs);
+    }
+
+    .filter-group {
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        min-width: 120px;
+    }
+
+    .bottom-panels {
+        gap: var(--spacing-md);
+    }
+
+    .panel {
+        padding: var(--spacing-sm);
+    }
+
+    /* Touch-friendly tap targets */
+    .task-actions .btn {
+        min-height: 36px;
+        min-width: 36px;
+    }
+
+    .agent-card {
+        padding: var(--spacing-md);
+    }
+}
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+.btn:focus-visible,
+.task-card:focus-visible,
+.agent-card:focus-visible,
+.skills-list li:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .task-card {
+        border: 2px solid var(--text-primary);
+    }
+
+    .btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ============================================================
    Print
    ============================================================ */
 @media print {
@@ -855,13 +1420,24 @@ body {
     .quick-fix-panel,
     .filter-bar,
     .modal,
-    .toast-container {
+    .toast-container,
+    .health-results-modal {
         display: none !important;
     }
 
     .main-content {
         margin: 0;
         padding: 0;
+    }
+
+    .board-container {
+        display: block;
+        overflow: visible;
+    }
+
+    .board-column {
+        page-break-inside: avoid;
+        margin-bottom: 20px;
     }
 
     .task-card {

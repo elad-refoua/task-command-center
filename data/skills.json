@@ -1,48 +1,56 @@
 {
-  "updated": "2026-01-29T22:33:23.388Z",
+  "updated": "2026-01-29T23:23:09.209Z",
   "statistics": {
-    "total_skills": 49,
-    "user_invocable": 43,
+    "total_skills": 51,
+    "user_invocable": 45,
     "categories": [
       {
         "name": "code",
-        "count": 49
+        "count": 51
       },
       {
         "name": "documents",
-        "count": 27
+        "count": 28
+      },
+      {
+        "name": "hebrew",
+        "count": 19
       },
       {
         "name": "analysis",
         "count": 18
       },
       {
-        "name": "hebrew",
-        "count": 18
-      },
-      {
         "name": "research",
-        "count": 15
+        "count": 16
       },
       {
         "name": "git",
-        "count": 13
+        "count": 14
       },
       {
         "name": "messaging",
-        "count": 11
+        "count": 12
       },
       {
         "name": "browser",
-        "count": 10
+        "count": 11
       },
       {
         "name": "calendar",
-        "count": 3
+        "count": 4
       }
     ],
-    "last_updated": "2026-01-29T22:26:13.149Z",
+    "last_updated": "2026-01-29T22:34:07.555Z",
     "recently_modified": [
+      {
+        "id": "desktop-monitor",
+        "title": "Desktop Monitor"
+      },
+      {
+        "id": "task-center",
+        "title": "Task Command Center"
+      },
       {
         "id": "schedule-task",
         "title": "Schedule Task Skill"
@@ -54,14 +62,6 @@
       {
         "id": "word-formatting",
         "title": "Word Document Formatting with python-docx"
-      },
-      {
-        "id": "scientific-figures",
-        "title": "Scientific Data Visualization Skill"
-      },
-      {
-        "id": "presentation-architect",
-        "title": "Presentation Architect"
       }
     ]
   },
@@ -122,6 +122,22 @@
       ],
       "categories": [
         "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "desktop-monitor",
+      "title": "Desktop Monitor",
+      "description": "A skill that monitors the user's desktop folder for new files and alerts when changes are detected.",
+      "triggers": [
+        "/desktop-monitor",
+        "/watch-desktop",
+        "/new-files"
+      ],
+      "categories": [
+        "research",
+        "code",
+        "hebrew",
         "documents"
       ]
     },
@@ -573,6 +589,22 @@
         "code",
         "analysis",
         "documents"
+      ]
+    },
+    {
+      "id": "task-center",
+      "title": "Task Command Center",
+      "description": "Unified task management system for Claude Code with self-healing, web dashboard, and natural language skill creation.",
+      "triggers": [
+        "/task-center",
+        "/schedule-task"
+      ],
+      "categories": [
+        "browser",
+        "calendar",
+        "messaging",
+        "git",
+        "code"
       ]
     },
     {
