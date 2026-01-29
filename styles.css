@@ -798,6 +798,20 @@ body {
     color: var(--text-muted);
 }
 
+.task-local-badge {
+    font-size: 10px;
+    background: #FEF3C7;
+    color: #92400E;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.task-card.local-task {
+    border-right-color: #F59E0B;
+    background: linear-gradient(135deg, #FFFBEB 0%, var(--bg-secondary) 50%);
+}
+
 /* ============================================================
    Task Details Modal
    ============================================================ */

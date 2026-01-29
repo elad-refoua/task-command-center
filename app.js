@@ -120,6 +120,9 @@ async function loadTasks() {
         // Load saved task assignments from localStorage
         loadTaskAssignments();
 
+        // Merge pending local tasks (not yet synced to server)
+        loadPendingLocalTasks();
+
         // Update statistics
         updateStatistics(data.statistics);
 
@@ -372,6 +375,7 @@ function renderTaskCard(task) {
     const statusInfo = getStatusInfo(task.status);
     const projectName = task.project_name || task.project || '';
     const lastUpdated = task.last_updated ? formatRelativeTime(task.last_updated) : '';
+    const isLocal = task._local || task._pendingSync;
 
     // Build assignment badges
     let assignmentBadges = '';
@@ -397,7 +401,7 @@ function renderTaskCard(task) {
     }
 
     return `
-        <div class="task-card status-${task.status}"
+        <div class="task-card status-${task.status} ${isLocal ? 'local-task' : ''}"
              draggable="true"
              data-task-id="${task.id}"
              onclick="openTaskDetails('${task.id}')"
@@ -406,6 +410,7 @@ function renderTaskCard(task) {
              ondrop="handleTaskDrop(event)">
             <div class="task-header">
                 <span class="task-status ${statusInfo.class}">${statusInfo.icon} ${statusInfo.text}</span>
+                ${isLocal ? '<span class="task-local-badge">📱 Local</span>' : ''}
                 ${lastUpdated ? `<span class="task-time">${lastUpdated}</span>` : ''}
             </div>
             <div class="task-title">${escapeHtml(task.subject)}</div>
@@ -677,6 +682,47 @@ function loadTaskAssignments() {
             }
         }
     });
+}
+
+/**
+ * Load pending local tasks that haven't been synced yet
+ */
+function loadPendingLocalTasks() {
+    const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
+
+    if (pendingTasks.length > 0) {
+        console.log(`Loading ${pendingTasks.length} pending local tasks`);
+
+        // Add pending tasks to the beginning of the list
+        // Mark them as local so we know they need sync
+        pendingTasks.forEach(task => {
+            task._local = true;
+            task._pendingSync = true;
+
+            // Check if already exists (by id)
+            const exists = state.tasks.some(t => t.id === task.id);
+            if (!exists) {
+                state.tasks.unshift(task);
+            }
+        });
+    }
+}
+
+/**
+ * Save a task locally (will be synced later)
+ */
+function saveTaskLocally(task) {
+    const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
+
+    // Remove if already exists (update)
+    const index = pendingTasks.findIndex(t => t.id === task.id);
+    if (index >= 0) {
+        pendingTasks[index] = task;
+    } else {
+        pendingTasks.push(task);
+    }
+
+    localStorage.setItem('pending_new_tasks', JSON.stringify(pendingTasks));
 }
 
 // ============================================================
@@ -1243,7 +1289,7 @@ function saveNewTask() {
     const description = document.getElementById('newTaskDescription').value.trim();
     const agent = document.getElementById('newTaskAgent').value;
     const skill = document.getElementById('newTaskSkill').value;
-    const scheduleType = document.querySelector('input[name="schedule"]:checked').value;
+    const scheduleType = document.querySelector('input[name="schedule"]:checked')?.value || 'now';
     const scheduleTime = document.getElementById('scheduleTime').value;
 
     if (!title) {
@@ -1253,8 +1299,8 @@ function saveNewTask() {
 
     // Create task object
     const newTask = {
-        id: `new_${Date.now()}`,
-        source: 'session',
+        id: `local_${Date.now()}`,
+        source: scheduleType === 'later' ? 'scheduled' : 'session',
         type: 'task',
         subject: title,
         description: description,
@@ -1263,6 +1309,10 @@ function saveNewTask() {
         last_updated: new Date().toISOString(),
         assigned_skill: skill || null,
         assigned_agent: agent || null,
+        project: 'Local Tasks',
+        project_name: 'Local Tasks',
+        _local: true,
+        _pendingSync: true
     };
 
     // Handle scheduling
@@ -1271,16 +1321,26 @@ function saveNewTask() {
             type: 'once',
             time: scheduleTime
         };
-        newTask.source = 'scheduled';
     }
 
-    // Save to pending tasks (will be synced)
-    const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
-    pendingTasks.push(newTask);
-    localStorage.setItem('pending_new_tasks', JSON.stringify(pendingTasks));
+    // Save to localStorage
+    saveTaskLocally(newTask);
 
     // Add to current state for immediate display
     state.tasks.unshift(newTask);
+
+    // Update statistics
+    const stats = {
+        total: state.tasks.length,
+        by_status: {
+            pending: state.tasks.filter(t => t.status === 'pending').length,
+            in_progress: state.tasks.filter(t => t.status === 'in_progress').length,
+            completed: state.tasks.filter(t => t.status === 'completed').length,
+            failed: state.tasks.filter(t => t.status === 'failed').length
+        }
+    };
+    updateStatistics(stats);
+
     renderTasks();
 
     // Clear form and close modal
@@ -1288,12 +1348,13 @@ function saveNewTask() {
     document.getElementById('newTaskDescription').value = '';
     document.getElementById('newTaskAgent').value = '';
     document.getElementById('newTaskSkill').value = '';
-    document.querySelector('input[name="schedule"][value="now"]').checked = true;
+    const nowRadio = document.querySelector('input[name="schedule"][value="now"]');
+    if (nowRadio) nowRadio.checked = true;
     document.getElementById('scheduleTime').value = '';
     document.getElementById('scheduleTime').classList.add('hidden');
 
     closeModal('newTaskModal');
-    showToast('Task created! Will sync on next update.', 'success');
+    showToast('Task created successfully!', 'success');
 }
 
 // ============================================================
@@ -1315,12 +1376,55 @@ function showToast(message, type = 'info') {
 }
 
 // ============================================================
-// SIDEBAR
+// SIDEBAR & NAVIGATION
 // ============================================================
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('open');
+}
+
+/**
+ * Handle view change from sidebar navigation
+ */
+function handleViewChange(view) {
+    console.log('Switching to view:', view);
+
+    switch (view) {
+        case 'tasks':
+            // Show all tasks
+            state.filters.source = 'all';
+            state.filters.status = 'all';
+            document.getElementById('filterSource').value = 'all';
+            document.getElementById('filterStatus').value = 'all';
+            break;
+
+        case 'scheduled':
+            // Show only scheduled tasks
+            state.filters.source = 'scheduled';
+            document.getElementById('filterSource').value = 'scheduled';
+            break;
+
+        case 'agents':
+            // Scroll to agents panel
+            document.querySelector('.agents-panel')?.scrollIntoView({ behavior: 'smooth' });
+            showToast('Agents panel', 'info');
+            return; // Don't re-render tasks
+
+        case 'skills':
+            // Scroll to skills panel
+            document.querySelector('.skills-panel')?.scrollIntoView({ behavior: 'smooth' });
+            showToast('Skills panel', 'info');
+            return; // Don't re-render tasks
+
+        case 'health':
+            // Run health check and scroll to health log
+            runHealthCheck();
+            document.querySelector('.health-log-section')?.scrollIntoView({ behavior: 'smooth' });
+            return; // Health check will update UI
+    }
+
+    renderTasks();
 }
 
 // ============================================================
@@ -1433,6 +1537,37 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(state.viewMode === 'board' ? 'תצוגת לוח' : 'תצוגת רשימה', 'info');
         });
     }
+
+    // Sidebar navigation
+    document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = item.dataset.view;
+
+            // Update active state
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            item.classList.add('active');
+
+            // Handle view change
+            handleViewChange(view);
+
+            // Close sidebar on mobile
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth < 768) {
+                sidebar.classList.remove('open');
+            }
+        });
+    });
+
+    // Settings button
+    document.getElementById('settingsBtn')?.addEventListener('click', () => {
+        showToast('Settings coming soon', 'info');
+    });
+
+    // Notifications button
+    document.getElementById('notificationsBtn')?.addEventListener('click', () => {
+        showToast('No new notifications', 'info');
+    });
 
     // Close sidebar on outside click (mobile)
     document.addEventListener('click', (e) => {
