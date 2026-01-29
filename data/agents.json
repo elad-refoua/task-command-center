@@ -1,0 +1,83 @@
+{
+  "updated": "2026-01-29T22:28:25.678Z",
+  "available": [
+    {
+      "id": "Explore",
+      "name": "Explore",
+      "icon": "🔍",
+      "description": "Fast codebase exploration - searches files, finds patterns, answers questions",
+      "description_he": "חיפוש מהיר בקוד",
+      "capabilities": [
+        "file search",
+        "code search",
+        "codebase questions"
+      ],
+      "subagent_type": "Explore"
+    },
+    {
+      "id": "Plan",
+      "name": "Plan",
+      "icon": "📋",
+      "description": "Software architect - designs implementation plans, identifies files, considers trade-offs",
+      "description_he": "תכנון פתרונות",
+      "capabilities": [
+        "implementation planning",
+        "architecture design",
+        "file identification"
+      ],
+      "subagent_type": "Plan"
+    },
+    {
+      "id": "Browser",
+      "name": "Browser",
+      "icon": "🌐",
+      "description": "Browser automation - controls Chrome, fills forms, extracts data",
+      "description_he": "אוטומציה בדפדפן",
+      "capabilities": [
+        "web navigation",
+        "form filling",
+        "data extraction"
+      ],
+      "subagent_type": null,
+      "requires_mcp": true
+    },
+    {
+      "id": "Bash",
+      "name": "Bash",
+      "icon": "💻",
+      "description": "Command execution - runs terminal commands, git operations, build tasks",
+      "description_he": "הרצת פקודות",
+      "capabilities": [
+        "command execution",
+        "git operations",
+        "system tasks"
+      ],
+      "subagent_type": "Bash"
+    },
+    {
+      "id": "general-purpose",
+      "name": "General Purpose",
+      "icon": "🤖",
+      "description": "Multi-step task handler - research, search, execute complex workflows",
+      "description_he": "סוכן כללי",
+      "capabilities": [
+        "research",
+        "multi-step tasks",
+        "complex workflows"
+      ],
+      "subagent_type": "general-purpose"
+    }
+  ],
+  "status": {
+    "running_count": 0,
+    "running_agents": [],
+    "available_types": [
+      "Explore",
+      "Plan",
+      "Browser",
+      "Bash",
+      "general-purpose"
+    ],
+    "total_executions": 0
+  }
+}

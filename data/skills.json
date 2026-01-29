@@ -1,0 +1,659 @@
+{
+  "updated": "2026-01-29T22:28:25.619Z",
+  "statistics": {
+    "total_skills": 49,
+    "user_invocable": 43,
+    "categories": [
+      {
+        "name": "code",
+        "count": 49
+      },
+      {
+        "name": "documents",
+        "count": 27
+      },
+      {
+        "name": "analysis",
+        "count": 18
+      },
+      {
+        "name": "hebrew",
+        "count": 18
+      },
+      {
+        "name": "research",
+        "count": 15
+      },
+      {
+        "name": "git",
+        "count": 13
+      },
+      {
+        "name": "messaging",
+        "count": 11
+      },
+      {
+        "name": "browser",
+        "count": 10
+      },
+      {
+        "name": "calendar",
+        "count": 3
+      }
+    ],
+    "last_updated": "2026-01-29T22:26:13.149Z",
+    "recently_modified": [
+      {
+        "id": "schedule-task",
+        "title": "Schedule Task Skill"
+      },
+      {
+        "id": "hebrew-keyboard",
+        "title": "Hebrew Keyboard Interpreter"
+      },
+      {
+        "id": "word-formatting",
+        "title": "Word Document Formatting with python-docx"
+      },
+      {
+        "id": "scientific-figures",
+        "title": "Scientific Data Visualization Skill"
+      },
+      {
+        "id": "presentation-architect",
+        "title": "Presentation Architect"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "id": "academic-paper-organizer",
+      "title": "Academic Paper Organizer Skill",
+      "description": "When organizing academic papers for manuscript revision, follow this workflow **IN ORDER**.",
+      "triggers": [],
+      "categories": [
+        "research",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "aic-figures",
+      "title": "AI Emotion Recognition Manuscript Figures",
+      "description": "Generate publication-ready figures for the manuscript \"The Emergent Capacity of Generative AI for Human Emotion Recognition\".",
+      "triggers": [],
+      "categories": [
+        "messaging",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "aic-diary",
+      "title": "AIC Diary Study - Analysis Skill",
+      "description": "No description available",
+      "triggers": [],
+      "categories": [
+        "messaging",
+        "git",
+        "code",
+        "analysis",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "browser",
+      "title": "Browser Automation - Token-Efficient",
+      "description": "No description available",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "research",
+        "messaging",
+        "code"
+      ]
+    },
+    {
+      "id": "claudeception",
+      "title": "Claudeception - Skill Extraction System",
+      "description": "No description available",
+      "triggers": [
+        "/claudeception"
+      ],
+      "categories": [
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "elad-context",
+      "title": "Elad Refoua - Research Context",
+      "description": "No description available",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "research",
+        "git",
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "ema-data",
+      "title": "EMA/ESM Data Handling Skill",
+      "description": "Specialized handling for Experience Sampling Method (ESM) and Ecological Momentary Assessment (EMA) data.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "analysis",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "gemini-consult",
+      "title": "Gemini Consultant",
+      "description": "Get a second opinion from Gemini 3 Pro.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "analysis",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "get-contact",
+      "title": "Get Contact",
+      "description": "Find contact details (email, phone) by name search.",
+      "triggers": [],
+      "categories": [
+        "calendar",
+        "messaging",
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "git-quick",
+      "title": "Git Quick - Fast GitHub Operations",
+      "description": "This skill provides fast, no-browser GitHub operations using the `gh` CLI.",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "messaging",
+        "git",
+        "code"
+      ]
+    },
+    {
+      "id": "gh-pages-deploy",
+      "title": "GitHub Pages Deployment",
+      "description": "Deploy static frontend websites to GitHub Pages using the GitHub CLI.",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "git",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "calendar",
+      "title": "Google Calendar Integration",
+      "description": "Check and manage calendar events via Google Apps Script API. **Supports sending calendar invites to guests.**",
+      "triggers": [],
+      "categories": [
+        "calendar",
+        "messaging",
+        "code"
+      ]
+    },
+    {
+      "id": "hcb-analysis",
+      "title": "HCB Paper Analysis Skill",
+      "description": "Run or extend the HCB paper analysis (\"Friend or Threat? Psychological Distress Moderates the Link Between Anthropomorphism and Projected Attachment t",
+      "triggers": [],
+      "categories": [
+        "code",
+        "analysis"
+      ]
+    },
+    {
+      "id": "hebrew-keyboard",
+      "title": "Hebrew Keyboard Interpreter",
+      "description": "Automatically detect and convert text typed with English keyboard layout when Hebrew was intended.",
+      "triggers": [],
+      "categories": [
+        "git",
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "hebrew-terminal",
+      "title": "Hebrew Terminal Launcher",
+      "description": "This skill launches Claude Code in a new Git Bash (mintty) terminal with proper Hebrew/RTL text rendering.",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "git",
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "hebrew-docx",
+      "title": "Hebrew Word Documents (RTL) Skill",
+      "description": "No description available",
+      "triggers": [],
+      "categories": [
+        "code",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "html-to-pdf",
+      "title": "HTML to PDF Converter",
+      "description": "Pixel-perfect HTML to PDF conversion using Puppeteer (Chrome headless). Provides excellent support for Hebrew, Arabic, and other RTL languages with au",
+      "triggers": [],
+      "categories": [
+        "code",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "html-to-pptx",
+      "title": "HTML to PowerPoint Converter",
+      "description": "Convert HTML to PowerPoint (.pptx) with excellent Hebrew/RTL support using PptxGenJS.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "nano-banana-poster",
+      "title": "Nano Banana Poster Generator",
+      "description": "Generate images using Google's Gemini model with optional reference assets.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "presentation-architect",
+      "title": "Presentation Architect",
+      "description": "Create comprehensive Markdown presentation blueprints enabling designers or AI to recreate without questions.",
+      "triggers": [],
+      "categories": [
+        "git",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "project-logger",
+      "title": "Project Logger",
+      "description": "Automatically creates a lightweight activity log for each project you work on.",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "git",
+        "code"
+      ]
+    },
+    {
+      "id": "python-learn",
+      "title": "Python Learning Skill",
+      "description": "Helps you learn Python by explaining concepts each time Python code is written.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "python-windows",
+      "title": "Python on Windows",
+      "description": "**CRITICAL**: On Windows systems, always use the `py` launcher instead of `python` or `python3` commands.",
+      "triggers": [],
+      "categories": [
+        "code"
+      ]
+    },
+    {
+      "id": "r-analysis",
+      "title": "R Statistical Analysis Skill",
+      "description": "When performing R statistical analysis, follow these guidelines:",
+      "triggers": [],
+      "categories": [
+        "code",
+        "analysis",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "rafaeli-grant-style",
+      "title": "Rafaeli Grant Writing Style",
+      "description": "This skill provides guidelines for writing academic grant proposals in the style of Prof. Eshkol Rafaeli, based on analysis of his ISF grant proposal ",
+      "triggers": [],
+      "categories": [
+        "research",
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "read-docx",
+      "title": "Read DOCX Files Skill",
+      "description": "Extract text from `.docx` files with proper handling for tables, Hebrew text, and document structure.",
+      "triggers": [
+        "/html-to-pdf"
+      ],
+      "categories": [
+        "code",
+        "analysis",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "scale-development",
+      "title": "Scale Development & Psychometrics Skill",
+      "description": "Specialized skill for psychological scale development and validation.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "analysis"
+      ]
+    },
+    {
+      "id": "schedule-task",
+      "title": "Schedule Task Skill",
+      "description": "Use this skill when the user wants to schedule Claude Code to run automatically - either at a specific time, after a delay, on a recurring schedule, o",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "code"
+      ]
+    },
+    {
+      "id": "scientific-figures",
+      "title": "Scientific Data Visualization Skill",
+      "description": "Create effective, publication-ready scientific figures based on empirical research from \"The Science of Visual Data Communication: What Works\" (Franco",
+      "triggers": [],
+      "categories": [
+        "research",
+        "git",
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "speech-generator",
+      "title": "Speech Generator",
+      "description": "Generate speech audio using ElevenLabs TTS.",
+      "triggers": [],
+      "categories": [
+        "messaging",
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "sr-extract",
+      "title": "Systematic Review Data Extractor",
+      "description": "No description available",
+      "triggers": [
+        "/sr-extract"
+      ],
+      "categories": [
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-docs",
+      "title": "Systematic Review Document Generator",
+      "description": "No description available",
+      "triggers": [
+        "/sr",
+        "/hebrew-docx"
+      ],
+      "categories": [
+        "research",
+        "messaging",
+        "code",
+        "analysis",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-download",
+      "title": "Systematic Review Literature Hunter",
+      "description": "No description available",
+      "triggers": [
+        "/sr-download"
+      ],
+      "categories": [
+        "browser",
+        "research",
+        "messaging",
+        "git",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-write",
+      "title": "Systematic Review Manuscript Writer",
+      "description": "No description available",
+      "triggers": [
+        "/sr-write",
+        "/hebrew-docx"
+      ],
+      "categories": [
+        "research",
+        "code",
+        "analysis",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr",
+      "title": "Systematic Review Orchestrator",
+      "description": "No description available",
+      "triggers": [
+        "/sr",
+        "/systematic-review",
+        "/sr-start"
+      ],
+      "categories": [
+        "browser",
+        "research",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-reader",
+      "title": "Systematic Review Paper Reader",
+      "description": "No description available",
+      "triggers": [
+        "/sr-reader"
+      ],
+      "categories": [
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-protocol",
+      "title": "Systematic Review Protocol Architect",
+      "description": "No description available",
+      "triggers": [
+        "/sr-protocol"
+      ],
+      "categories": [
+        "research",
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-quality",
+      "title": "Systematic Review Quality Assessor",
+      "description": "No description available",
+      "triggers": [
+        "/sr-quality"
+      ],
+      "categories": [
+        "git",
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-screen",
+      "title": "Systematic Review Screening Agent",
+      "description": "No description available",
+      "triggers": [
+        "/sr-screen"
+      ],
+      "categories": [
+        "research",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-search",
+      "title": "Systematic Review Search Strategist",
+      "description": "No description available",
+      "triggers": [
+        "/sr-search"
+      ],
+      "categories": [
+        "research",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "sr-meta",
+      "title": "Systematic Review Synthesizer (Meta-Analysis)",
+      "description": "No description available",
+      "triggers": [
+        "/sr-meta"
+      ],
+      "categories": [
+        "git",
+        "code",
+        "analysis"
+      ]
+    },
+    {
+      "id": "sr-verify",
+      "title": "Systematic Review Verification Agent",
+      "description": "No description available",
+      "triggers": [],
+      "categories": [
+        "research",
+        "code",
+        "analysis",
+        "documents"
+      ]
+    },
+    {
+      "id": "therapeutic-bot",
+      "title": "Therapeutic Bot Development Skill",
+      "description": "Specialized skill for Clinical Prompt Engineering (CPE) and therapeutic chatbot development.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "hebrew"
+      ]
+    },
+    {
+      "id": "verify-before-done",
+      "title": "Verify Before Done Skill",
+      "description": "When completing multi-step tasks, ALWAYS verify before declaring done.",
+      "triggers": [],
+      "categories": [
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "web-research",
+      "title": "Web Research - Multi-Source Information Gathering",
+      "description": "Efficiently research topics across multiple web sources while minimizing token usage.",
+      "triggers": [],
+      "categories": [
+        "browser",
+        "research",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "whatsapp",
+      "title": "WhatsApp Automation (Green API)",
+      "description": "Send messages and get group information via WhatsApp.",
+      "triggers": [],
+      "categories": [
+        "messaging",
+        "code"
+      ]
+    },
+    {
+      "id": "word-formatting",
+      "title": "Word Document Formatting with python-docx",
+      "description": "No description available",
+      "triggers": [],
+      "categories": [
+        "research",
+        "code",
+        "documents"
+      ]
+    },
+    {
+      "id": "workflow-learner",
+      "title": "Workflow Learner",
+      "description": "A system that watches your Claude Code usage and identifies patterns worth automating.",
+      "triggers": [
+        "/workflow-learner",
+        "/patterns"
+      ],
+      "categories": [
+        "git",
+        "code",
+        "analysis",
+        "hebrew",
+        "documents"
+      ]
+    },
+    {
+      "id": "zoom-meeting",
+      "title": "Zoom Meeting Scheduler",
+      "description": "Schedule Zoom meetings and send calendar invites automatically.",
+      "triggers": [],
+      "categories": [
+        "calendar",
+        "messaging",
+        "code"
+      ]
+    }
+  ]
+}

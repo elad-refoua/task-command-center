@@ -11,6 +11,7 @@
 const state = {
     tasks: [],
     skills: [],
+    agents: [],
     healthLog: [],
     filters: {
         source: 'all',
@@ -450,15 +451,33 @@ function renderRecentFixes() {
 // SKILLS
 // ============================================================
 
-function loadSkills() {
-    // Sample skills for demo
-    state.skills = [
-        { name: 'calendar', description: 'תזמון אירועים' },
-        { name: 'whatsapp', description: 'שליחת הודעות' },
-        { name: 'browser', description: 'אוטומציה בדפדפן' },
-        { name: 'r-analysis', description: 'ניתוח סטטיסטי' },
-        { name: 'schedule-task', description: 'תזמון משימות' }
-    ];
+async function loadSkills() {
+    try {
+        const response = await fetch('data/skills.json');
+        if (response.ok) {
+            const data = await response.json();
+            state.skills = data.skills.map(s => ({
+                id: s.id,
+                name: s.title || s.id,
+                description: s.description,
+                triggers: s.triggers || [],
+                categories: s.categories || []
+            }));
+            console.log(`Loaded ${state.skills.length} skills`);
+        } else {
+            throw new Error('Skills data not found');
+        }
+    } catch (error) {
+        console.log('Loading sample skills:', error.message);
+        // Fallback to sample data
+        state.skills = [
+            { id: 'calendar', name: 'Calendar', description: 'תזמון אירועים' },
+            { id: 'whatsapp', name: 'WhatsApp', description: 'שליחת הודעות' },
+            { id: 'browser', name: 'Browser', description: 'אוטומציה בדפדפן' },
+            { id: 'r-analysis', name: 'R Analysis', description: 'ניתוח סטטיסטי' },
+            { id: 'schedule-task', name: 'Schedule Task', description: 'תזמון משימות' }
+        ];
+    }
 
     renderSkills();
 }
@@ -471,16 +490,70 @@ function renderSkills() {
 
     if (!container) return;
 
-    container.innerHTML = state.skills.map(skill => `
-        <li onclick="selectSkill('${skill.name}')">
-            <span class="skill-name">${skill.name}</span>
-            <span class="skill-desc">${skill.description}</span>
+    container.innerHTML = state.skills.slice(0, 15).map(skill => `
+        <li onclick="selectSkill('${escapeHtml(skill.id)}')" title="${escapeHtml(skill.description)}">
+            <span class="skill-name">${escapeHtml(skill.name)}</span>
+            <span class="skill-desc">${escapeHtml(skill.description.substring(0, 40))}...</span>
         </li>
     `).join('');
 }
 
-function selectSkill(skillName) {
-    showToast(`כישור נבחר: ${skillName}`, 'info');
+function selectSkill(skillId) {
+    const skill = state.skills.find(s => s.id === skillId);
+    if (skill) {
+        showToast(`כישור נבחר: ${skill.name}`, 'info');
+    }
+}
+
+// ============================================================
+// AGENTS
+// ============================================================
+
+async function loadAgents() {
+    try {
+        const response = await fetch('data/agents.json');
+        if (response.ok) {
+            const data = await response.json();
+            state.agents = data.available || [];
+            console.log(`Loaded ${state.agents.length} agents`);
+        } else {
+            throw new Error('Agents data not found');
+        }
+    } catch (error) {
+        console.log('Loading sample agents:', error.message);
+        // Fallback to sample data
+        state.agents = [
+            { id: 'Explore', name: 'Explore', icon: '🔍', description: 'חיפוש בקוד' },
+            { id: 'Plan', name: 'Plan', icon: '📋', description: 'תכנון פתרונות' },
+            { id: 'Browser', name: 'Browser', icon: '🌐', description: 'אוטומציה בדפדפן' }
+        ];
+    }
+
+    renderAgents();
+}
+
+function renderAgents() {
+    const container = document.getElementById('agentsList');
+    if (!container) return;
+
+    container.innerHTML = state.agents.map(agent => `
+        <div class="agent-card" onclick="launchAgent('${escapeHtml(agent.id)}')">
+            <span class="agent-icon">${agent.icon || '🤖'}</span>
+            <div class="agent-info">
+                <span class="agent-name">${escapeHtml(agent.name)}</span>
+                <span class="agent-desc">${escapeHtml(agent.description_he || agent.description || '')}</span>
+            </div>
+            <span class="agent-status idle">פנוי</span>
+        </div>
+    `).join('');
+}
+
+function launchAgent(agentId) {
+    const agent = state.agents.find(a => a.id === agentId);
+    if (agent) {
+        showToast(`משיק ${agent.icon} ${agent.name}...`, 'info');
+        // In a real implementation, this would trigger the agent
+    }
 }
 
 function createSkill() {
@@ -543,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load data
     loadTasks();
     loadSkills();
+    loadAgents();
 
     // Menu toggle
     document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
