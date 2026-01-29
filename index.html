@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז המשימות | Task Command Center</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-toggle" id="menuToggle" aria-label="תפריט">☰</button>
+        <h1 class="logo">🎯 מרכז המשימות</h1>
+        <div class="header-actions">
+            <button class="btn btn-icon" id="refreshBtn" title="רענון">🔄</button>
+            <button class="btn btn-icon" id="notificationsBtn" title="התראות">🔔</button>
+            <button class="btn btn-icon" id="settingsBtn" title="הגדרות">⚙️</button>
+        </div>
+    </header>
+
+    <!-- Mobile Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-view="tasks">📋 משימות</a>
+            <a href="#" class="nav-item" data-view="scheduled">📅 מתוזמנות</a>
+            <a href="#" class="nav-item" data-view="agents">🤖 סוכנים</a>
+            <a href="#" class="nav-item" data-view="skills">⚡ כישורים</a>
+            <a href="#" class="nav-item" data-view="health">🏥 בריאות</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Statistics Cards -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <span class="stat-value" id="totalTasks">0</span>
+                <span class="stat-label">סה״כ משימות</span>
+            </div>
+            <div class="stat-card stat-pending">
+                <span class="stat-value" id="pendingTasks">0</span>
+                <span class="stat-label">ממתינות</span>
+            </div>
+            <div class="stat-card stat-failed">
+                <span class="stat-value" id="failedTasks">0</span>
+                <span class="stat-label">נכשלו</span>
+            </div>
+            <div class="stat-card stat-completed">
+                <span class="stat-value" id="completedTasks">0</span>
+                <span class="stat-label">הושלמו</span>
+            </div>
+        </section>
+
+        <!-- Health Status Banner -->
+        <section class="health-banner" id="healthBanner">
+            <span class="health-icon">✅</span>
+            <span class="health-text">בדיקה אחרונה: <span id="lastCheck">טוען...</span></span>
+            <span class="health-status" id="healthStatus">תקין</span>
+        </section>
+
+        <!-- Filter Bar -->
+        <section class="filter-bar">
+            <div class="filter-group">
+                <select id="filterSource" class="filter-select">
+                    <option value="all">כל המקורות</option>
+                    <option value="scheduled">מתוזמנות</option>
+                    <option value="session">סשן</option>
+                    <option value="project">פרויקט</option>
+                </select>
+                <select id="filterStatus" class="filter-select">
+                    <option value="all">כל הסטטוסים</option>
+                    <option value="pending">ממתין</option>
+                    <option value="in_progress">בביצוע</option>
+                    <option value="completed">הושלם</option>
+                    <option value="failed">נכשל</option>
+                </select>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 חיפוש משימות..." class="search-input">
+            </div>
+        </section>
+
+        <!-- Tasks Container -->
+        <section class="content-grid">
+            <!-- Tasks List -->
+            <div class="tasks-container">
+                <div class="section-header">
+                    <h2>משימות</h2>
+                    <button class="btn btn-primary" id="newTaskBtn">+ משימה חדשה</button>
+                </div>
+                <div class="tasks-list" id="tasksList">
+                    <!-- Tasks will be rendered here -->
+                    <div class="loading-spinner" id="tasksLoading">
+                        <div class="spinner"></div>
+                        <span>טוען משימות...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Fix Sidebar -->
+            <aside class="quick-fix-panel">
+                <h3>⚡ תיקון מהיר</h3>
+                <p class="panel-description">שלח משימה מיידית לקלוד</p>
+                <div class="quick-fix-form">
+                    <textarea
+                        id="quickFixInput"
+                        placeholder="תאר את המשימה..."
+                        rows="4"
+                    ></textarea>
+                    <div class="quick-fix-options">
+                        <select id="quickFixAgent" class="filter-select">
+                            <option value="">סוכן אוטומטי</option>
+                            <option value="Explore">🔍 Explore</option>
+                            <option value="Plan">📋 Plan</option>
+                            <option value="Browser">🌐 Browser</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-block" id="quickFixBtn">
+                        🚀 שלח עכשיו
+                    </button>
+                </div>
+
+                <div class="recent-fixes">
+                    <h4>אחרונים:</h4>
+                    <ul id="recentFixes" class="recent-list">
+                        <!-- Recent quick fixes -->
+                    </ul>
+                </div>
+            </aside>
+        </section>
+
+        <!-- Agents & Skills Section -->
+        <section class="bottom-panels">
+            <!-- Agents Panel -->
+            <div class="panel agents-panel">
+                <div class="panel-header">
+                    <h3>🤖 סוכנים</h3>
+                    <button class="btn btn-small" id="newAgentBtn">+ חדש</button>
+                </div>
+                <div class="agents-list" id="agentsList">
+                    <div class="agent-card">
+                        <span class="agent-icon">🔍</span>
+                        <div class="agent-info">
+                            <span class="agent-name">Explore</span>
+                            <span class="agent-desc">חיפוש בקוד</span>
+                        </div>
+                        <span class="agent-status idle">פנוי</span>
+                    </div>
+                    <div class="agent-card">
+                        <span class="agent-icon">📋</span>
+                        <div class="agent-info">
+                            <span class="agent-name">Plan</span>
+                            <span class="agent-desc">תכנון פתרונות</span>
+                        </div>
+                        <span class="agent-status idle">פנוי</span>
+                    </div>
+                    <div class="agent-card">
+                        <span class="agent-icon">🌐</span>
+                        <div class="agent-info">
+                            <span class="agent-name">Browser</span>
+                            <span class="agent-desc">אוטומציה בדפדפן</span>
+                        </div>
+                        <span class="agent-status idle">פנוי</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Panel -->
+            <div class="panel skills-panel">
+                <div class="panel-header">
+                    <h3>⚡ יצירת כישור</h3>
+                </div>
+                <div class="skill-creator">
+                    <input
+                        type="text"
+                        id="skillDescription"
+                        placeholder="תאר את הכישור שאתה רוצה..."
+                        class="skill-input"
+                    >
+                    <button class="btn btn-primary" id="createSkillBtn">
+                        ✨ צור עם קלוד
+                    </button>
+                </div>
+                <div class="skills-browser">
+                    <h4>כישורים קיימים (<span id="skillsCount">0</span>):</h4>
+                    <input type="text" id="skillSearch" placeholder="🔍 חפש כישור..." class="search-input small">
+                    <ul id="skillsList" class="skills-list">
+                        <!-- Skills will be rendered here -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Health Log Section -->
+        <section class="health-log-section">
+            <div class="section-header">
+                <h3>📊 יומן בריאות</h3>
+                <button class="btn btn-small" id="viewAllHealthBtn">הצג הכל</button>
+            </div>
+            <div class="health-log" id="healthLog">
+                <!-- Health log entries -->
+            </div>
+        </section>
+    </main>
+
+    <!-- New Task Modal -->
+    <div class="modal" id="newTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>משימה חדשה</h3>
+                <button class="modal-close" id="closeNewTaskModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>כותרת:</label>
+                    <input type="text" id="newTaskTitle" placeholder="מה צריך לעשות?">
+                </div>
+                <div class="form-group">
+                    <label>תיאור:</label>
+                    <textarea id="newTaskDescription" rows="4" placeholder="פרטים נוספים..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>סוכן:</label>
+                        <select id="newTaskAgent">
+                            <option value="">אוטומטי</option>
+                            <option value="Explore">Explore</option>
+                            <option value="Plan">Plan</option>
+                            <option value="Browser">Browser</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>כישור:</label>
+                        <select id="newTaskSkill">
+                            <option value="">ללא</option>
+                            <!-- Skills will be populated -->
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>תזמון:</label>
+                    <div class="schedule-options">
+                        <label class="radio-label">
+                            <input type="radio" name="schedule" value="now" checked> מיידי
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="schedule" value="later"> מאוחר יותר
+                        </label>
+                    </div>
+                    <input type="datetime-local" id="scheduleTime" class="schedule-time hidden">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelNewTask">ביטול</button>
+                <button class="btn btn-primary" id="saveNewTask">שמור משימה</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
