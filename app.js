@@ -39,17 +39,9 @@ const CONFIG = {
 // Server connectivity state
 let serverAvailable = false;
 
-// Detect if running on local server (http://127.0.0.1:3847 or localhost:3847)
-const isLocalServer = window.location.hostname === '127.0.0.1' ||
-                      window.location.hostname === 'localhost' ||
-                      window.location.port === '3847';
-
-// Use relative paths when on local server, full URL when on GitHub Pages
+// API URL helper - always use relative paths since dashboard is local-only
 function getApiUrl(endpoint) {
-    if (isLocalServer) {
-        return endpoint; // e.g., "/api/status"
-    }
-    return `${CONFIG.localServerUrl}${endpoint}`; // e.g., "http://127.0.0.1:3847/api/status"
+    return endpoint; // e.g., "/api/status"
 }
 
 /**
