@@ -15,9 +15,9 @@
         <button class="menu-toggle" id="menuToggle" aria-label="תפריט">☰</button>
         <h1 class="logo">🎯 מרכז המשימות</h1>
         <div class="header-actions">
-            <button class="btn btn-icon" id="refreshBtn" title="רענון">🔄</button>
-            <button class="btn btn-icon" id="notificationsBtn" title="התראות">🔔</button>
-            <button class="btn btn-icon" id="settingsBtn" title="הגדרות">⚙️</button>
+            <button class="btn btn-icon" id="refreshBtn" title="רענון" aria-label="רענן משימות">🔄</button>
+            <button class="btn btn-icon" id="notificationsBtn" title="התראות" aria-label="הצג התראות">🔔</button>
+            <button class="btn btn-icon" id="settingsBtn" title="הגדרות" aria-label="פתח הגדרות">⚙️</button>
         </div>
     </header>
 
@@ -98,7 +98,7 @@
                 </select>
             </div>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 חיפוש משימות..." class="search-input">
+                <input type="text" id="searchInput" placeholder="🔍 חיפוש משימות..." class="search-input" aria-label="חיפוש משימות">
             </div>
         </section>
 
@@ -220,16 +220,16 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>כותרת:</label>
+                    <label for="newTaskTitle">כותרת:</label>
                     <input type="text" id="newTaskTitle" placeholder="מה צריך לעשות?">
                 </div>
                 <div class="form-group">
-                    <label>תיאור:</label>
+                    <label for="newTaskDescription">תיאור:</label>
                     <textarea id="newTaskDescription" rows="4" placeholder="פרטים נוספים..."></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>סוכן:</label>
+                        <label for="newTaskAgent">סוכן:</label>
                         <select id="newTaskAgent">
                             <option value="">אוטומטי</option>
                             <option value="Explore">Explore</option>
@@ -238,7 +238,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>כישור:</label>
+                        <label for="newTaskSkill">כישור:</label>
                         <select id="newTaskSkill">
                             <option value="">ללא</option>
                             <!-- Skills will be populated -->

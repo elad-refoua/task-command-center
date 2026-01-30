@@ -522,7 +522,14 @@ function handleColumnDragOver(e) {
 
 function handleColumnDrop(e) {
     e.preventDefault();
-    const data = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+    let data = {};
+    try {
+        const str = (e.dataTransfer.getData('text/plain') || '').trim();
+        data = str ? JSON.parse(str) : {};
+    } catch (error) {
+        console.error('Invalid drag data:', error);
+        return;
+    }
 
     if (data.type === 'task') {
         const taskId = data.id;
@@ -536,17 +543,21 @@ function handleColumnDrop(e) {
 // ============================================================
 
 function setupSkillAgentDragAndDrop() {
-    // Make skills draggable
+    // Make skills draggable - remove old listeners first to prevent duplicates (memory leak fix)
     const skillItems = document.querySelectorAll('.skills-list li');
     skillItems.forEach(item => {
+        item.removeEventListener('dragstart', handleSkillDragStart);
+        item.removeEventListener('dragend', handleSkillDragEnd);
         item.draggable = true;
         item.addEventListener('dragstart', handleSkillDragStart);
         item.addEventListener('dragend', handleSkillDragEnd);
     });
 
-    // Make agents draggable
+    // Make agents draggable - remove old listeners first to prevent duplicates (memory leak fix)
     const agentCards = document.querySelectorAll('.agent-card');
     agentCards.forEach(card => {
+        card.removeEventListener('dragstart', handleAgentDragStart);
+        card.removeEventListener('dragend', handleAgentDragEnd);
         card.draggable = true;
         card.addEventListener('dragstart', handleAgentDragStart);
         card.addEventListener('dragend', handleAgentDragEnd);
@@ -617,12 +628,21 @@ function handleTaskDrop(e) {
     e.stopPropagation();
     e.currentTarget.classList.remove('drop-target');
 
-    const data = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
-    const taskId = e.currentTarget.dataset.taskId;
+    let data = {};
+    try {
+        const str = (e.dataTransfer.getData('text/plain') || '').trim();
+        data = str ? JSON.parse(str) : {};
+    } catch (error) {
+        console.error('Invalid drag data:', error);
+        return;
+    }
 
-    if (data.type === 'skill') {
+    const taskId = e.currentTarget.dataset.taskId;
+    if (!taskId) return;
+
+    if (data.type === 'skill' && data.id) {
         assignSkillToTask(taskId, data.id);
-    } else if (data.type === 'agent') {
+    } else if (data.type === 'agent' && data.id) {
         assignAgentToTask(taskId, data.id);
     }
 }
@@ -1074,7 +1094,14 @@ function updateHealthBanner(results) {
 
 function submitQuickFix() {
     const input = document.getElementById('quickFixInput');
-    const agent = document.getElementById('quickFixAgent').value;
+    const agentEl = document.getElementById('quickFixAgent');
+
+    if (!input || !agentEl) {
+        showToast('Form elements not found', 'error');
+        return;
+    }
+
+    const agent = agentEl.value;
     const prompt = input.value.trim();
 
     if (!prompt) {
@@ -1660,10 +1687,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Auto-refresh
-    setInterval(() => {
-        loadTasks();
+    // Auto-refresh with cleanup
+    let refreshInterval = setInterval(() => {
+        loadTasks().catch(err => console.error('Auto-refresh failed:', err));
     }, CONFIG.refreshInterval);
+
+    // Cleanup on page unload to prevent memory leaks
+    window.addEventListener('beforeunload', () => {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    });
 });
 
 // ============================================================
