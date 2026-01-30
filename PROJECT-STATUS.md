@@ -1,7 +1,7 @@
 # Task Command Center - Project Status
 
 **Last Updated:** 2026-01-30
-**Dashboard URL:** https://elad-refoua.github.io/task-command-center/
+**Dashboard URL:** http://127.0.0.1:3847/ (LOCAL ONLY - GitHub Pages disabled)
 
 ---
 
@@ -34,7 +34,7 @@ The Task Command Center is a unified task management system for Claude Code that
 ```
 
 ### 2. Open Dashboard
-https://elad-refoua.github.io/task-command-center/
+http://127.0.0.1:3847/
 
 Look for 🟢 in the header = Server connected, full functionality
 
@@ -59,8 +59,8 @@ Look for 🟢 in the header = Server connected, full functionality
 │  ├── POST /api/health-check  → Full health check               │
 │  └── GET  /api/status        → Server status                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  DASHBOARD (GitHub Pages)                                       │
-│  └── Connects to local server for task execution               │
+│  DASHBOARD (LOCAL at http://127.0.0.1:3847/)                    │
+│  └── Served by local server, full task execution               │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -108,9 +108,9 @@ command-center/
 ## Lessons Learned
 
 ### Problem: Static Website Limitations
-**Initial approach:** Tried to execute tasks directly from GitHub Pages dashboard.
-**Issue:** GitHub Pages is a static website - cannot execute local commands.
-**Solution:** Created a local HTTP server that the dashboard calls via API.
+**Initial approach:** Tried to use GitHub Pages for the dashboard.
+**Issue:** Static websites cannot execute local commands.
+**Solution:** Created a local HTTP server at http://127.0.0.1:3847/ that serves the dashboard AND handles API calls. GitHub Pages has been disabled.
 
 ### Problem: Automation Requires Local Components
 **Initial approach:** Expected the dashboard alone to handle everything.

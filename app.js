@@ -1411,11 +1411,14 @@ function renderRecentFixes() {
     // Create local copy to prevent race conditions
     const fixes = [...state.recentFixes];
 
-    container.innerHTML = fixes.map(fix => `
-        <li title="${escapeHtml(fix.prompt || '')}">
-            ${escapeHtml(fix.prompt || '')}...
-        </li>
-    `).join('');
+    container.innerHTML = fixes.map(fix => {
+        const prompt = fix.prompt || '';
+        return `
+            <li title="${escapeHtml(prompt)}">
+                ${escapeHtml(prompt)}${prompt ? '...' : ''}
+            </li>
+        `;
+    }).join('');
 }
 
 // ============================================================
@@ -1755,7 +1758,12 @@ function showToast(message, type = 'info') {
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('open');
+    const menuToggle = document.getElementById('menuToggle');
+    const isOpen = sidebar.classList.toggle('open');
+    // Update aria-expanded for accessibility
+    if (menuToggle) {
+        menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
 }
 
 /**
@@ -1764,19 +1772,22 @@ function toggleSidebar() {
 function handleViewChange(view) {
     console.log('Switching to view:', view);
 
+    const filterSourceEl = document.getElementById('filterSource');
+    const filterStatusEl = document.getElementById('filterStatus');
+
     switch (view) {
         case 'tasks':
             // Show all tasks
             state.filters.source = 'all';
             state.filters.status = 'all';
-            document.getElementById('filterSource').value = 'all';
-            document.getElementById('filterStatus').value = 'all';
+            if (filterSourceEl) filterSourceEl.value = 'all';
+            if (filterStatusEl) filterStatusEl.value = 'all';
             break;
 
         case 'scheduled':
             // Show only scheduled tasks
             state.filters.source = 'scheduled';
-            document.getElementById('filterSource').value = 'scheduled';
+            if (filterSourceEl) filterSourceEl.value = 'scheduled';
             break;
 
         case 'agents':
@@ -1818,32 +1829,50 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkServerStatus, CONFIG.serverCheckInterval);
 
     // Menu toggle
-    document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', toggleSidebar);
+    }
 
     // Refresh button
-    document.getElementById('refreshBtn').addEventListener('click', () => {
-        showToast('מרענן...', 'info');
-        loadTasks();
-    });
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            showToast('מרענן...', 'info');
+            loadTasks();
+        });
+    }
 
     // Filters
-    document.getElementById('filterSource').addEventListener('change', (e) => {
-        state.filters.source = e.target.value;
-        renderTasks();
-    });
+    const filterSource = document.getElementById('filterSource');
+    if (filterSource) {
+        filterSource.addEventListener('change', (e) => {
+            state.filters.source = e.target.value;
+            renderTasks();
+        });
+    }
 
-    document.getElementById('filterStatus').addEventListener('change', (e) => {
-        state.filters.status = e.target.value;
-        renderTasks();
-    });
+    const filterStatus = document.getElementById('filterStatus');
+    if (filterStatus) {
+        filterStatus.addEventListener('change', (e) => {
+            state.filters.status = e.target.value;
+            renderTasks();
+        });
+    }
 
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        state.filters.search = e.target.value;
-        renderTasks();
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            state.filters.search = e.target.value;
+            renderTasks();
+        });
+    }
 
     // Quick fix
-    document.getElementById('quickFixBtn').addEventListener('click', submitQuickFix);
+    const quickFixBtn = document.getElementById('quickFixBtn');
+    if (quickFixBtn) {
+        quickFixBtn.addEventListener('click', submitQuickFix);
+    }
 
     // Toggle quick fix panel
     const toggleQuickFix = document.getElementById('toggleQuickFix');
@@ -1856,10 +1885,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // New task modal
-    document.getElementById('newTaskBtn').addEventListener('click', () => openModal('newTaskModal'));
-    document.getElementById('closeNewTaskModal').addEventListener('click', () => closeModal('newTaskModal'));
-    document.getElementById('cancelNewTask').addEventListener('click', () => closeModal('newTaskModal'));
-    document.getElementById('saveNewTask').addEventListener('click', saveNewTask);
+    const newTaskBtn = document.getElementById('newTaskBtn');
+    if (newTaskBtn) {
+        newTaskBtn.addEventListener('click', () => openModal('newTaskModal'));
+    }
+    const closeNewTaskModal = document.getElementById('closeNewTaskModal');
+    if (closeNewTaskModal) {
+        closeNewTaskModal.addEventListener('click', () => closeModal('newTaskModal'));
+    }
+    const cancelNewTask = document.getElementById('cancelNewTask');
+    if (cancelNewTask) {
+        cancelNewTask.addEventListener('click', () => closeModal('newTaskModal'));
+    }
+    const saveNewTaskBtn = document.getElementById('saveNewTask');
+    if (saveNewTaskBtn) {
+        saveNewTaskBtn.addEventListener('click', saveNewTask);
+    }
 
     // Schedule toggle
     document.querySelectorAll('input[name="schedule"]').forEach(radio => {
@@ -1870,7 +1911,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Create skill
-    document.getElementById('createSkillBtn').addEventListener('click', createSkill);
+    const createSkillBtn = document.getElementById('createSkillBtn');
+    if (createSkillBtn) {
+        createSkillBtn.addEventListener('click', createSkill);
+    }
 
     // Skill search
     document.getElementById('skillSearch')?.addEventListener('input', (e) => {
@@ -1937,10 +1981,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle view change
             handleViewChange(view);
 
-            // Close sidebar on mobile
+            // Close sidebar on mobile and update aria-expanded
             const sidebar = document.getElementById('sidebar');
+            const menuToggleEl = document.getElementById('menuToggle');
             if (window.innerWidth < 768) {
                 sidebar.classList.remove('open');
+                if (menuToggleEl) menuToggleEl.setAttribute('aria-expanded', 'false');
             }
         });
     });
@@ -1955,14 +2001,16 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('No new notifications', 'info');
     });
 
-    // Close sidebar on outside click (mobile)
+    // Close sidebar on outside click (mobile) and update aria-expanded
     document.addEventListener('click', (e) => {
         const sidebar = document.getElementById('sidebar');
-        const menuToggle = document.getElementById('menuToggle');
-        if (sidebar.classList.contains('open') &&
+        const menuToggleEl = document.getElementById('menuToggle');
+        if (sidebar && menuToggleEl &&
+            sidebar.classList.contains('open') &&
             !sidebar.contains(e.target) &&
-            !menuToggle.contains(e.target)) {
+            !menuToggleEl.contains(e.target)) {
             sidebar.classList.remove('open');
+            menuToggleEl.setAttribute('aria-expanded', 'false');
         }
     });
 
@@ -1988,16 +2036,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Auto-refresh with cleanup
-    let refreshInterval = setInterval(() => {
+    const refreshIntervalId = setInterval(() => {
         loadTasks().catch(err => console.error('Auto-refresh failed:', err));
     }, CONFIG.refreshInterval);
 
     // Cleanup on page unload to prevent memory leaks
     window.addEventListener('beforeunload', () => {
-        if (refreshInterval) {
-            clearInterval(refreshInterval);
-            refreshInterval = null;
-        }
+        clearInterval(refreshIntervalId);
     });
 });
 

@@ -138,11 +138,11 @@ body {
 .sidebar {
     position: fixed;
     top: var(--header-height);
-    right: -var(--sidebar-width);
+    right: calc(-1 * var(--sidebar-width));
     width: var(--sidebar-width);
     height: calc(100vh - var(--header-height));
     background: var(--bg-secondary);
-    border-left: 1px solid var(--border-color);
+    border-inline-end: 1px solid var(--border-color);
     transition: right 0.3s ease;
     z-index: 90;
     overflow-y: auto;
@@ -166,6 +166,14 @@ body {
     text-decoration: none;
     margin-bottom: var(--spacing-xs);
     transition: background 0.2s;
+    /* Button reset styles */
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    text-align: start;
 }
 
 .nav-item:hover {
@@ -552,7 +560,7 @@ body {
     background: var(--bg-secondary);
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
-    border-right: 4px solid var(--pending-color);
+    border-inline-start: 4px solid var(--pending-color);
     cursor: grab;
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
@@ -573,9 +581,9 @@ body {
     border: 2px dashed var(--primary-color);
 }
 
-.task-card.status-completed { border-right-color: var(--success-color); }
-.task-card.status-failed { border-right-color: var(--danger-color); }
-.task-card.status-in_progress { border-right-color: var(--warning-color); }
+.task-card.status-completed { border-inline-start-color: var(--success-color); }
+.task-card.status-failed { border-inline-start-color: var(--danger-color); }
+.task-card.status-in_progress { border-inline-start-color: var(--warning-color); }
 
 /* Assigned badges on task cards */
 .task-assignments {
@@ -805,7 +813,7 @@ body {
 }
 
 .task-card.local-task {
-    border-right-color: #F59E0B;
+    border-inline-start-color: #F59E0B;
     background: linear-gradient(135deg, #FFFBEB 0%, var(--bg-secondary) 50%);
 }
 
@@ -1228,13 +1236,13 @@ body {
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
     box-shadow: var(--shadow-lg);
-    border-right: 4px solid var(--primary-color);
+    border-inline-start: 4px solid var(--primary-color);
     animation: slideIn 0.3s ease;
 }
 
-.toast.success { border-right-color: var(--success-color); }
-.toast.error { border-right-color: var(--danger-color); }
-.toast.warning { border-right-color: var(--warning-color); }
+.toast.success { border-inline-start-color: var(--success-color); }
+.toast.error { border-inline-start-color: var(--danger-color); }
+.toast.warning { border-inline-start-color: var(--warning-color); }
 
 @keyframes slideIn {
     from { transform: translateY(100%); opacity: 0; }
@@ -1393,11 +1401,11 @@ body {
 /* Better hover states for skills/agents */
 .agent-card:hover {
     background: var(--bg-secondary);
-    transform: translateX(-2px);
+    transform: translateX(2px); /* Positive for RTL layout */
 }
 
 .skills-list li:hover {
-    transform: translateX(-2px);
+    transform: translateX(2px); /* Positive for RTL layout */
 }
 
 /* ============================================================

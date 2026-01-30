@@ -12,7 +12,7 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <button class="menu-toggle" id="menuToggle" aria-label="תפריט">☰</button>
+        <button class="menu-toggle" id="menuToggle" aria-label="תפריט" aria-expanded="false" aria-controls="sidebar">☰</button>
         <h1 class="logo">🎯 מרכז המשימות</h1>
         <div class="header-actions">
             <button class="btn btn-icon" id="refreshBtn" title="רענון" aria-label="רענן משימות">🔄</button>
@@ -22,13 +22,13 @@
     </header>
 
     <!-- Mobile Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <nav class="sidebar-nav">
-            <a href="#" class="nav-item active" data-view="tasks">📋 משימות</a>
-            <a href="#" class="nav-item" data-view="scheduled">📅 מתוזמנות</a>
-            <a href="#" class="nav-item" data-view="agents">🤖 סוכנים</a>
-            <a href="#" class="nav-item" data-view="skills">⚡ כישורים</a>
-            <a href="#" class="nav-item" data-view="health">🏥 בריאות</a>
+    <aside class="sidebar" id="sidebar" aria-label="תפריט ראשי">
+        <nav class="sidebar-nav" role="navigation">
+            <button type="button" class="nav-item active" data-view="tasks">📋 משימות</button>
+            <button type="button" class="nav-item" data-view="scheduled">📅 מתוזמנות</button>
+            <button type="button" class="nav-item" data-view="agents">🤖 סוכנים</button>
+            <button type="button" class="nav-item" data-view="skills">⚡ כישורים</button>
+            <button type="button" class="nav-item" data-view="health">🏥 בריאות</button>
         </nav>
     </aside>
 
@@ -256,16 +256,16 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>תזמון:</label>
-                    <div class="schedule-options">
+                    <label id="scheduleLabel">תזמון:</label>
+                    <div class="schedule-options" role="radiogroup" aria-labelledby="scheduleLabel">
                         <label class="radio-label">
-                            <input type="radio" name="schedule" value="now" checked> מיידי
+                            <input type="radio" name="schedule" id="scheduleNow" value="now" checked> מיידי
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="schedule" value="later"> מאוחר יותר
+                            <input type="radio" name="schedule" id="scheduleLater" value="later"> מאוחר יותר
                         </label>
                     </div>
-                    <input type="datetime-local" id="scheduleTime" class="schedule-time hidden">
+                    <input type="datetime-local" id="scheduleTime" class="schedule-time hidden" aria-label="זמן מתוזמן">
                 </div>
             </div>
             <div class="modal-footer">

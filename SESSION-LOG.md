@@ -20,9 +20,9 @@ A local-first task management dashboard that can execute Claude Code tasks direc
 ```
 
 ### Key Insight
-**GitHub Pages = Static = CANNOT execute commands**
+**Static websites CANNOT execute commands** - GitHub Pages was disabled.
 
-The solution: Local Node.js server that serves BOTH the dashboard AND handles API calls. Same origin = no CORS issues.
+The solution: Local Node.js server at http://127.0.0.1:3847/ serves BOTH the dashboard AND handles API calls. Same origin = no CORS issues. Dashboard is now LOCAL ONLY.
 
 ---
 
@@ -167,9 +167,9 @@ curl -X POST http://127.0.0.1:3847/api/health-check
 
 ## URLs
 
-- **Local Dashboard:** http://127.0.0.1:3847/
-- **GitHub Pages (read-only):** https://elad-refoua.github.io/task-command-center/
-- **GitHub Repo:** https://github.com/elad-refoua/task-command-center
+- **Local Dashboard:** http://127.0.0.1:3847/ (PRIMARY - use this)
+- **GitHub Repo:** https://github.com/elad-refoua/task-command-center (source code only)
+- **GitHub Pages:** DISABLED - Dashboard is local-only now
 
 ---
 
