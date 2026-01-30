@@ -1826,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAgents();
 
     // Periodically check server status
-    setInterval(checkServerStatus, CONFIG.serverCheckInterval);
+    const serverCheckIntervalId = setInterval(checkServerStatus, CONFIG.serverCheckInterval);
 
     // Menu toggle
     const menuToggle = document.getElementById('menuToggle');
@@ -1879,8 +1879,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleQuickFix) {
         toggleQuickFix.addEventListener('click', () => {
             const panel = document.getElementById('quickFixPanel');
-            panel.classList.toggle('collapsed');
-            toggleQuickFix.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+            if (panel) {
+                panel.classList.toggle('collapsed');
+                toggleQuickFix.textContent = panel.classList.contains('collapsed') ? '+' : '-';
+            }
         });
     }
 
@@ -1906,7 +1908,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input[name="schedule"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const timeInput = document.getElementById('scheduleTime');
-            timeInput.classList.toggle('hidden', e.target.value !== 'later');
+            if (timeInput) {
+                timeInput.classList.toggle('hidden', e.target.value !== 'later');
+            }
         });
     });
 
@@ -2043,6 +2047,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cleanup on page unload to prevent memory leaks
     window.addEventListener('beforeunload', () => {
         clearInterval(refreshIntervalId);
+        clearInterval(serverCheckIntervalId);
     });
 });
 
