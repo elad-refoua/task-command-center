@@ -956,19 +956,21 @@ async function runHealthCheck() {
     resultsBody.innerHTML = `
         <div class="loading-spinner">
             <div class="spinner"></div>
-            <span>מריץ בדיקת בריאות...</span>
+            <span>מרענן נתונים ומריץ בדיקה...</span>
         </div>
     `;
 
-    // Simulate health check (in real implementation, this would call the backend)
     try {
-        // Analyze current tasks
+        // Step 1: Refresh data from server (like the 10-min check does)
+        await loadTasks();
+
+        // Step 2: Analyze current tasks
         const results = analyzeTaskHealth();
 
-        // Display results
+        // Step 3: Display results
         resultsBody.innerHTML = renderHealthResults(results);
 
-        // Update health banner
+        // Step 4: Update health banner
         updateHealthBanner(results);
 
         showToast('בדיקת בריאות הושלמה', 'success');
@@ -977,6 +979,12 @@ async function runHealthCheck() {
             <div class="health-result-item">
                 <span class="health-result-label">שגיאה</span>
                 <span class="health-result-value error">${escapeHtml(error.message)}</span>
+            </div>
+            <div class="health-fixes-list" style="margin-top: 16px;">
+                <p style="font-size: 12px; color: var(--text-secondary);">
+                    💡 <strong>טיפ:</strong> כדי לסנכרן משימות חדשות מהמחשב, הרץ:
+                    <br><code>node ~/.claude/command-center/scripts/sync-dashboard.js</code>
+                </p>
             </div>
         `;
         showToast('שגיאה בבדיקת בריאות', 'error');
