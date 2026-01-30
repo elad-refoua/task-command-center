@@ -812,32 +812,68 @@ function startTask(taskId) {
     const task = state.tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    // Mark as in_progress
-    task.status = 'in_progress';
-    task.last_updated = new Date().toISOString();
-    renderTasks();
+    // Show command to run on local machine
+    const workingDir = task.working_dir || 'C:\\Users\\user\\Desktop';
+    const skill = task.assigned_skill ? `--skill ${task.assigned_skill}` : '';
+    const taskDesc = (task.description || task.subject).replace(/"/g, '\\"');
 
-    // Queue the task for execution
-    // Since we can't run Claude from browser, we save to pending queue
-    // The health check will pick it up and execute it
-    try {
-        const pendingExec = JSON.parse(localStorage.getItem('pending_task_executions') || '[]');
-        pendingExec.push({
-            id: taskId,
-            subject: task.subject,
-            description: task.description || task.subject,
-            working_dir: task.working_dir || '',
-            agent: task.assigned_agent || '',
-            skill: task.assigned_skill || '',
-            queued_at: new Date().toISOString()
+    // Create command
+    const command = `node ~/.claude/command-center/scripts/run-task.js "${taskDesc}" --dir "${workingDir}" ${skill}`.trim();
+
+    // Show modal with command
+    showRunTaskModal(task, command);
+}
+
+function showRunTaskModal(task, command) {
+    let modal = document.getElementById('runTaskModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'runTaskModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>▶️ הרץ משימה</h3>
+                    <button class="modal-close" onclick="closeModal('runTaskModal')">&times;</button>
+                </div>
+                <div class="modal-body" id="runTaskModalBody"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('runTaskModal')">סגור</button>
+                    <button class="btn btn-primary" onclick="copyTaskCommand()">📋 העתק פקודה</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    document.getElementById('runTaskModalBody').innerHTML = `
+        <p><strong>משימה:</strong> ${escapeHtml(task.subject)}</p>
+        <p style="margin-top: 16px; color: var(--text-secondary);">
+            הדאשבורד לא יכול להריץ משימות ישירות (אתר סטטי).<br>
+            הרץ את הפקודה הבאה ב-Claude Code או Terminal:
+        </p>
+        <div style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 8px; margin-top: 12px; font-family: monospace; font-size: 12px; overflow-x: auto; direction: ltr; text-align: left;">
+            <code id="taskCommandText">${escapeHtml(command)}</code>
+        </div>
+        <p style="margin-top: 16px; font-size: 12px; color: var(--text-muted);">
+            <strong>או:</strong> הפעל בדיקת בריאות:<br>
+            <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">
+            %USERPROFILE%\\.claude\\command-center\\run-health-check.bat
+            </code>
+        </p>
+    `;
+
+    modal.classList.add('open');
+}
+
+function copyTaskCommand() {
+    const commandText = document.getElementById('taskCommandText')?.textContent;
+    if (commandText) {
+        navigator.clipboard.writeText(commandText).then(() => {
+            showToast('Command copied!', 'success');
+        }).catch(() => {
+            showToast('Failed to copy', 'error');
         });
-        localStorage.setItem('pending_task_executions', JSON.stringify(pendingExec));
-
-        showToast(`Task queued: ${task.subject}`, 'success');
-        showToast('Will execute on next sync (or run sync-dashboard.js manually)', 'info');
-    } catch (error) {
-        console.error('Failed to queue task:', error);
-        showToast('Failed to queue task', 'error');
     }
 }
 
@@ -1805,3 +1841,5 @@ window.openTaskDetails = openTaskDetails;
 window.updateTaskAssignment = updateTaskAssignment;
 window.saveNewTask = saveNewTask;
 window.viewAllHealthLogs = viewAllHealthLogs;
+window.showRunTaskModal = showRunTaskModal;
+window.copyTaskCommand = copyTaskCommand;
