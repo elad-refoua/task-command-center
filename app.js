@@ -48,13 +48,6 @@ function getApiUrl(endpoint) {
  * Check if local server is running
  */
 async function checkServerStatus() {
-    // If we're on the local server, we know it's available
-    if (isLocalServer) {
-        serverAvailable = true;
-        updateServerStatusUI();
-        return true;
-    }
-
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
