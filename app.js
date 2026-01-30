@@ -31,8 +31,69 @@ const state = {
 const CONFIG = {
     dataPath: 'data/tasks.json',
     refreshInterval: 60000, // 1 minute
-    toastDuration: 3000
+    toastDuration: 3000,
+    localServerUrl: 'http://127.0.0.1:3847',
+    serverCheckInterval: 30000 // Check server status every 30 seconds
 };
+
+// Server connectivity state
+let serverAvailable = false;
+
+/**
+ * Check if local server is running
+ */
+async function checkServerStatus() {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        const response = await fetch(`${CONFIG.localServerUrl}/api/status`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            const data = await response.json();
+            serverAvailable = data.success === true;
+            updateServerStatusUI();
+            return serverAvailable;
+        }
+    } catch (error) {
+        serverAvailable = false;
+        updateServerStatusUI();
+    }
+    return false;
+}
+
+/**
+ * Update UI to show server status
+ */
+function updateServerStatusUI() {
+    let indicator = document.getElementById('serverStatusIndicator');
+    if (!indicator) {
+        // Create server status indicator in header
+        const headerActions = document.querySelector('.header-actions');
+        if (headerActions) {
+            indicator = document.createElement('span');
+            indicator.id = 'serverStatusIndicator';
+            indicator.className = 'server-status';
+            indicator.title = 'Local server status';
+            headerActions.insertBefore(indicator, headerActions.firstChild);
+        }
+    }
+
+    if (indicator) {
+        if (serverAvailable) {
+            indicator.innerHTML = '🟢';
+            indicator.title = 'Local server running - Tasks can execute directly';
+            indicator.className = 'server-status online';
+        } else {
+            indicator.innerHTML = '🔴';
+            indicator.title = 'Local server offline - Run start-server.bat to enable task execution';
+            indicator.className = 'server-status offline';
+        }
+    }
+}
 
 // ============================================================
 // UTILITIES
@@ -808,20 +869,54 @@ function editTask(taskId) {
     showToast(`עריכת משימה: ${task.subject}`, 'info');
 }
 
-function startTask(taskId) {
+async function startTask(taskId) {
     const task = state.tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    // Show command to run on local machine
-    const workingDir = task.working_dir || 'C:\\Users\\user\\Desktop';
-    const skill = task.assigned_skill ? `--skill ${task.assigned_skill}` : '';
-    const taskDesc = (task.description || task.subject).replace(/"/g, '\\"');
+    // Check if server is available
+    if (serverAvailable) {
+        // Execute via local server API
+        try {
+            showToast('Starting task...', 'info');
 
-    // Create command
-    const command = `node ~/.claude/command-center/scripts/run-task.js "${taskDesc}" --dir "${workingDir}" ${skill}`.trim();
+            const response = await fetch(`${CONFIG.localServerUrl}/api/run-task`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    taskId: task.id,
+                    task: task.description || task.subject,
+                    workingDir: task.working_dir || 'C:\\Users\\user\\Desktop',
+                    skill: task.assigned_skill
+                })
+            });
 
-    // Show modal with command
-    showRunTaskModal(task, command);
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`Task started! Run ID: ${result.runId}`, 'success');
+
+                // Update task status locally
+                task.status = 'in_progress';
+                task.last_updated = new Date().toISOString();
+                renderTasks();
+            } else {
+                showToast(`Failed: ${result.error}`, 'error');
+            }
+        } catch (error) {
+            showToast(`Server error: ${error.message}`, 'error');
+        }
+    } else {
+        // Fallback: Show command to run manually
+        const workingDir = task.working_dir || 'C:\\Users\\user\\Desktop';
+        const skill = task.assigned_skill ? `--skill ${task.assigned_skill}` : '';
+        const taskDesc = (task.description || task.subject).replace(/"/g, '\\"');
+
+        // Create command
+        const command = `node ~/.claude/command-center/scripts/run-task.js "${taskDesc}" --dir "${workingDir}" ${skill}`.trim();
+
+        // Show modal with command
+        showRunTaskModal(task, command);
+    }
 }
 
 function showRunTaskModal(task, command) {
@@ -1018,24 +1113,60 @@ async function runHealthCheck() {
     resultsBody.innerHTML = `
         <div class="loading-spinner">
             <div class="spinner"></div>
-            <span>מרענן נתונים ומריץ בדיקה...</span>
+            <span>${serverAvailable ? 'מריץ בדיקת בריאות אמיתית...' : 'מרענן נתונים...'}</span>
         </div>
     `;
 
     try {
-        // Step 1: Refresh data from server (like the 10-min check does)
-        await loadTasks();
+        // If server is available, run actual health check
+        if (serverAvailable) {
+            showToast('Running full health check via local server...', 'info');
 
-        // Step 2: Analyze current tasks
-        const results = analyzeTaskHealth();
+            const response = await fetch(`${CONFIG.localServerUrl}/api/health-check`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
 
-        // Step 3: Display results
-        resultsBody.innerHTML = renderHealthResults(results);
+            const result = await response.json();
 
-        // Step 4: Update health banner
-        updateHealthBanner(results);
+            if (result.success) {
+                // Show server output
+                resultsBody.innerHTML = `
+                    <div class="health-result-item">
+                        <span class="health-result-label">Status</span>
+                        <span class="health-result-value success">Health check completed!</span>
+                    </div>
+                    <div class="health-fixes-list" style="margin-top: 16px;">
+                        <h4>Server Output:</h4>
+                        <pre style="background: #1E1E1E; color: #D4D4D4; padding: 12px; border-radius: 8px; font-size: 11px; overflow-x: auto; direction: ltr; text-align: left; max-height: 300px; overflow-y: auto;">${escapeHtml(result.output || 'No output')}</pre>
+                    </div>
+                `;
 
-        showToast('בדיקת בריאות הושלמה', 'success');
+                // Reload tasks to get updated data
+                await loadTasks();
+                showToast('Health check completed!', 'success');
+            } else {
+                throw new Error(result.error || 'Health check failed');
+            }
+        } else {
+            // Fallback: Just refresh data and analyze locally
+            await loadTasks();
+            const results = analyzeTaskHealth();
+            resultsBody.innerHTML = renderHealthResults(results);
+            updateHealthBanner(results);
+
+            resultsBody.innerHTML += `
+                <div class="health-fixes-list" style="margin-top: 16px; background: #FEF3C7;">
+                    <h4>⚠️ Limited Mode</h4>
+                    <p style="font-size: 12px; color: var(--text-secondary);">
+                        Local server is not running. To enable full health checks with task retry:<br>
+                        Run <code>%USERPROFILE%\\.claude\\command-center\\start-server.bat</code>
+                    </p>
+                </div>
+            `;
+
+            showToast('Data refreshed (server offline)', 'warning');
+        }
     } catch (error) {
         resultsBody.innerHTML = `
             <div class="health-result-item">
@@ -1044,16 +1175,16 @@ async function runHealthCheck() {
             </div>
             <div class="health-fixes-list" style="margin-top: 16px;">
                 <p style="font-size: 12px; color: var(--text-secondary);">
-                    💡 <strong>טיפ:</strong> כדי לסנכרן משימות חדשות מהמחשב, הרץ:
-                    <br><code>node ~/.claude/command-center/scripts/sync-dashboard.js</code>
+                    💡 <strong>טיפ:</strong> Start the local server for full functionality:<br>
+                    <code>%USERPROFILE%\\.claude\\command-center\\start-server.bat</code>
                 </p>
             </div>
         `;
-        showToast('שגיאה בבדיקת בריאות', 'error');
+        showToast('Health check error', 'error');
     } finally {
         state.healthCheckRunning = false;
         btn.classList.remove('loading');
-        btn.innerHTML = '🔍 בדוק עכשיו';
+        btn.innerHTML = '🔄 רענן';
     }
 }
 
@@ -1184,7 +1315,7 @@ function updateHealthBanner(results) {
 // QUICK FIX
 // ============================================================
 
-function submitQuickFix() {
+async function submitQuickFix() {
     const input = document.getElementById('quickFixInput');
     const agentEl = document.getElementById('quickFixAgent');
 
@@ -1211,22 +1342,51 @@ function submitQuickFix() {
     state.recentFixes = state.recentFixes.slice(0, 5);
     renderRecentFixes();
 
-    // Save to localStorage for sync (with error handling)
-    try {
-        const pendingFixes = JSON.parse(localStorage.getItem('pending_quick_fixes') || '[]');
-        pendingFixes.push({
-            id: `qf_${Date.now()}`,
-            prompt,
-            agent,
-            created: new Date().toISOString()
-        });
-        localStorage.setItem('pending_quick_fixes', JSON.stringify(pendingFixes));
-    } catch (error) {
-        console.error('Failed to save quick fix:', error);
-    }
+    // If server is available, execute immediately
+    if (serverAvailable) {
+        try {
+            showToast('Executing quick fix...', 'info');
 
-    showToast('משימה נשלחה! תבוצע בסנכרון הבא.', 'success');
-    input.value = '';
+            const response = await fetch(`${CONFIG.localServerUrl}/api/quick-fix`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    task: prompt,
+                    workingDir: 'C:\\Users\\user\\Desktop',
+                    skill: null,
+                    agent: agent || null
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`Quick fix started! ID: ${result.fixId}`, 'success');
+                input.value = '';
+            } else {
+                throw new Error(result.error || 'Quick fix failed');
+            }
+        } catch (error) {
+            showToast(`Error: ${error.message}`, 'error');
+        }
+    } else {
+        // Save to localStorage for sync (with error handling)
+        try {
+            const pendingFixes = JSON.parse(localStorage.getItem('pending_quick_fixes') || '[]');
+            pendingFixes.push({
+                id: `qf_${Date.now()}`,
+                prompt,
+                agent,
+                created: new Date().toISOString()
+            });
+            localStorage.setItem('pending_quick_fixes', JSON.stringify(pendingFixes));
+        } catch (error) {
+            console.error('Failed to save quick fix:', error);
+        }
+
+        showToast('Server offline - Task saved for next sync', 'warning');
+        input.value = '';
+    }
 }
 
 function renderRecentFixes() {
@@ -1631,10 +1791,16 @@ function handleViewChange(view) {
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check server status first
+    checkServerStatus();
+
     // Load data
     loadTasks();
     loadSkills();
     loadAgents();
+
+    // Periodically check server status
+    setInterval(checkServerStatus, CONFIG.serverCheckInterval);
 
     // Menu toggle
     document.getElementById('menuToggle').addEventListener('click', toggleSidebar);

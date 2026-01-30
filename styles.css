@@ -112,6 +112,24 @@ body {
 .header-actions {
     display: flex;
     gap: var(--spacing-sm);
+    align-items: center;
+}
+
+/* Server Status Indicator */
+.server-status {
+    font-size: 12px;
+    cursor: help;
+    padding: 4px 8px;
+    border-radius: var(--border-radius);
+    transition: all 0.2s;
+}
+
+.server-status.online {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.server-status.offline {
+    background: rgba(239, 68, 68, 0.1);
 }
 
 /* ============================================================
