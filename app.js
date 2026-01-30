@@ -101,13 +101,17 @@ function getSourceInfo(source) {
  * Load tasks from JSON file
  */
 async function loadTasks() {
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     try {
         // Try loading from data folder first
-        let response = await fetch(CONFIG.dataPath);
+        let response = await fetch(CONFIG.dataPath, { signal: controller.signal });
 
         if (!response.ok) {
             // Try loading from parent directory (for local testing)
-            response = await fetch('../unified-tasks.json');
+            response = await fetch('../unified-tasks.json', { signal: controller.signal });
         }
 
         if (!response.ok) {
@@ -137,11 +141,17 @@ async function loadTasks() {
 
     } catch (error) {
         console.error('Error loading tasks:', error);
-        showToast('שגיאה בטעינת משימות', 'error');
+        if (error.name === 'AbortError') {
+            showToast('טעינת משימות לקחה יותר מדי זמן', 'warning');
+        } else {
+            showToast('שגיאה בטעינת משימות', 'error');
+        }
         hideLoading();
 
         // Show sample data for demo
         loadSampleData();
+    } finally {
+        clearTimeout(timeoutId);
     }
 }
 
@@ -567,7 +577,13 @@ function setupSkillAgentDragAndDrop() {
 function handleSkillDragStart(e) {
     // Use currentTarget to ensure we get the draggable element, not a child
     const target = e.currentTarget || e.target;
-    const skillId = target.dataset.skillId || target.querySelector('.skill-name')?.textContent?.replace('⚡ ', '');
+    const skillId = target.dataset.skillId || (target.querySelector('.skill-name')?.textContent?.replace('⚡ ', '') || '');
+
+    if (!skillId) {
+        console.warn('No skill ID found for drag');
+        return;
+    }
+
     state.dragData = {
         type: 'skill',
         id: skillId
@@ -590,7 +606,13 @@ function handleSkillDragEnd(e) {
 function handleAgentDragStart(e) {
     // Use currentTarget to ensure we get the draggable element, not a child
     const target = e.currentTarget || e.target;
-    const agentId = target.dataset.agentId || target.querySelector('.agent-name')?.textContent;
+    const agentId = target.dataset.agentId || (target.querySelector('.agent-name')?.textContent || '');
+
+    if (!agentId) {
+        console.warn('No agent ID found for drag');
+        return;
+    }
+
     state.dragData = {
         type: 'agent',
         id: agentId
@@ -1141,9 +1163,12 @@ function renderRecentFixes() {
     const container = document.getElementById('recentFixes');
     if (!container) return;
 
-    container.innerHTML = state.recentFixes.map(fix => `
-        <li title="${escapeHtml(fix.prompt)}">
-            ${escapeHtml(fix.prompt)}...
+    // Create local copy to prevent race conditions
+    const fixes = [...state.recentFixes];
+
+    container.innerHTML = fixes.map(fix => `
+        <li title="${escapeHtml(fix.prompt || '')}">
+            ${escapeHtml(fix.prompt || '')}...
         </li>
     `).join('');
 }
@@ -1365,12 +1390,24 @@ function populateSkillsDropdown() {
  * Save new task
  */
 function saveNewTask() {
-    const title = document.getElementById('newTaskTitle').value.trim();
-    const description = document.getElementById('newTaskDescription').value.trim();
-    const agent = document.getElementById('newTaskAgent').value;
-    const skill = document.getElementById('newTaskSkill').value;
+    // Get form elements with null checks
+    const titleEl = document.getElementById('newTaskTitle');
+    const descEl = document.getElementById('newTaskDescription');
+    const agentEl = document.getElementById('newTaskAgent');
+    const skillEl = document.getElementById('newTaskSkill');
+    const scheduleTimeEl = document.getElementById('scheduleTime');
+
+    if (!titleEl) {
+        showToast('Form not found', 'error');
+        return;
+    }
+
+    const title = titleEl.value.trim();
+    const description = descEl ? descEl.value.trim() : '';
+    const agent = agentEl ? agentEl.value : '';
+    const skill = skillEl ? skillEl.value : '';
     const scheduleType = document.querySelector('input[name="schedule"]:checked')?.value || 'now';
-    const scheduleTime = document.getElementById('scheduleTime').value;
+    const scheduleTime = scheduleTimeEl ? scheduleTimeEl.value : '';
 
     if (!title) {
         showToast('Please enter a task title', 'warning');
@@ -1423,15 +1460,17 @@ function saveNewTask() {
 
     renderTasks();
 
-    // Clear form and close modal
-    document.getElementById('newTaskTitle').value = '';
-    document.getElementById('newTaskDescription').value = '';
-    document.getElementById('newTaskAgent').value = '';
-    document.getElementById('newTaskSkill').value = '';
+    // Clear form and close modal (using previously validated elements)
+    if (titleEl) titleEl.value = '';
+    if (descEl) descEl.value = '';
+    if (agentEl) agentEl.value = '';
+    if (skillEl) skillEl.value = '';
     const nowRadio = document.querySelector('input[name="schedule"][value="now"]');
     if (nowRadio) nowRadio.checked = true;
-    document.getElementById('scheduleTime').value = '';
-    document.getElementById('scheduleTime').classList.add('hidden');
+    if (scheduleTimeEl) {
+        scheduleTimeEl.value = '';
+        scheduleTimeEl.classList.add('hidden');
+    }
 
     closeModal('newTaskModal');
     showToast('Task created successfully!', 'success');

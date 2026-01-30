@@ -608,7 +608,7 @@ body {
     background: var(--bg-secondary);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-lg);
-    z-index: 50;
+    z-index: 150; /* Higher than sidebar (90) but below modals (200) */
     transition: transform 0.3s ease;
 }
 
@@ -1187,7 +1187,8 @@ body {
     position: fixed;
     bottom: var(--spacing-md);
     right: var(--spacing-md);
-    left: 340px; /* Avoid overlap with quick-fix panel (300px + padding) */
+    width: calc(100vw - 360px); /* Avoid overlap with quick-fix panel */
+    max-width: 400px;
     z-index: 300;
     display: flex;
     flex-direction: column;
@@ -1196,8 +1197,11 @@ body {
 
 @media (max-width: 767px) {
     .toast-container {
+        width: auto;
         left: var(--spacing-md);
+        right: var(--spacing-md);
         bottom: 80px; /* Above the collapsed quick-fix panel */
+        max-width: none;
     }
 }
 
@@ -1386,6 +1390,7 @@ body {
         flex: 0 0 85vw;
         min-width: 85vw;
         max-width: 85vw;
+        max-height: calc(100vh - 200px); /* Smaller offset for mobile */
     }
 
     .quick-fix-panel.floating {
@@ -1473,7 +1478,10 @@ body {
     .filter-bar,
     .modal,
     .toast-container,
-    .health-results-modal {
+    .health-results-modal,
+    .task-actions,
+    .add-task-btn,
+    .btn {
         display: none !important;
     }
 
@@ -1490,9 +1498,11 @@ body {
     .board-column {
         page-break-inside: avoid;
         margin-bottom: 20px;
+        max-height: none;
     }
 
     .task-card {
         break-inside: avoid;
+        page-break-inside: avoid;
     }
 }
