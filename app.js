@@ -39,15 +39,35 @@ const CONFIG = {
 // Server connectivity state
 let serverAvailable = false;
 
+// Detect if running on local server (http://127.0.0.1:3847 or localhost:3847)
+const isLocalServer = window.location.hostname === '127.0.0.1' ||
+                      window.location.hostname === 'localhost' ||
+                      window.location.port === '3847';
+
+// Use relative paths when on local server, full URL when on GitHub Pages
+function getApiUrl(endpoint) {
+    if (isLocalServer) {
+        return endpoint; // e.g., "/api/status"
+    }
+    return `${CONFIG.localServerUrl}${endpoint}`; // e.g., "http://127.0.0.1:3847/api/status"
+}
+
 /**
  * Check if local server is running
  */
 async function checkServerStatus() {
+    // If we're on the local server, we know it's available
+    if (isLocalServer) {
+        serverAvailable = true;
+        updateServerStatusUI();
+        return true;
+    }
+
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-        const response = await fetch(`${CONFIG.localServerUrl}/api/status`, {
+        const response = await fetch(getApiUrl('/api/status'), {
             signal: controller.signal
         });
         clearTimeout(timeoutId);
@@ -879,7 +899,7 @@ async function startTask(taskId) {
         try {
             showToast('Starting task...', 'info');
 
-            const response = await fetch(`${CONFIG.localServerUrl}/api/run-task`, {
+            const response = await fetch(getApiUrl('/api/run-task'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1122,7 +1142,7 @@ async function runHealthCheck() {
         if (serverAvailable) {
             showToast('Running full health check via local server...', 'info');
 
-            const response = await fetch(`${CONFIG.localServerUrl}/api/health-check`, {
+            const response = await fetch(getApiUrl('/api/health-check'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -1347,7 +1367,7 @@ async function submitQuickFix() {
         try {
             showToast('Executing quick fix...', 'info');
 
-            const response = await fetch(`${CONFIG.localServerUrl}/api/quick-fix`, {
+            const response = await fetch(getApiUrl('/api/quick-fix'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
