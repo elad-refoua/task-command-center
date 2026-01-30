@@ -899,15 +899,25 @@ async function startTask(taskId) {
         try {
             showToast('Starting task...', 'info');
 
+            // For local tasks (created in dashboard), don't send taskId since it won't exist on server
+            // Server will use the task description instead
+            const isLocalTask = task._local || task.id.startsWith('local_');
+
+            const requestBody = {
+                task: task.description || task.subject,
+                workingDir: task.working_dir || 'C:\\Users\\user\\Desktop',
+                skill: task.assigned_skill
+            };
+
+            // Only include taskId for server-side tasks (they exist in unified-tasks.json)
+            if (!isLocalTask) {
+                requestBody.taskId = task.id;
+            }
+
             const response = await fetch(getApiUrl('/api/run-task'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    taskId: task.id,
-                    task: task.description || task.subject,
-                    workingDir: task.working_dir || 'C:\\Users\\user\\Desktop',
-                    skill: task.assigned_skill
-                })
+                body: JSON.stringify(requestBody)
             });
 
             const result = await response.json();
