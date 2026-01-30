@@ -715,29 +715,8 @@ body {
     min-height: 200px;
 }
 
-/* Task Card */
-.task-card {
-    background: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-md);
-    border-right: 4px solid var(--pending-color);
-    cursor: grab;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.task-card:hover {
-    transform: translateX(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.task-card.dragging {
-    opacity: 0.5;
-    cursor: grabbing;
-}
-
-.task-card.status-completed { border-right-color: var(--success-color); }
-.task-card.status-failed { border-right-color: var(--danger-color); }
-.task-card.status-in_progress { border-right-color: var(--warning-color); }
+/* Task Card - List View Specific (inherits base styles from board section)
+   Note: Base .task-card styles are defined in the Board section above */
 
 .task-header {
     display: flex;
@@ -1207,12 +1186,19 @@ body {
 .toast-container {
     position: fixed;
     bottom: var(--spacing-md);
-    left: var(--spacing-md);
     right: var(--spacing-md);
+    left: 340px; /* Avoid overlap with quick-fix panel (300px + padding) */
     z-index: 300;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+}
+
+@media (max-width: 767px) {
+    .toast-container {
+        left: var(--spacing-md);
+        bottom: 80px; /* Above the collapsed quick-fix panel */
+    }
 }
 
 .toast {

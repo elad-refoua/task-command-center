@@ -554,18 +554,21 @@ function setupSkillAgentDragAndDrop() {
 }
 
 function handleSkillDragStart(e) {
-    const skillId = e.target.dataset.skillId || e.target.querySelector('.skill-name')?.textContent;
+    // Use currentTarget to ensure we get the draggable element, not a child
+    const target = e.currentTarget || e.target;
+    const skillId = target.dataset.skillId || target.querySelector('.skill-name')?.textContent?.replace('⚡ ', '');
     state.dragData = {
         type: 'skill',
         id: skillId
     };
-    e.target.classList.add('dragging');
+    target.classList.add('dragging');
     e.dataTransfer.setData('text/plain', JSON.stringify(state.dragData));
     e.dataTransfer.effectAllowed = 'copy';
 }
 
 function handleSkillDragEnd(e) {
-    e.target.classList.remove('dragging');
+    const target = e.currentTarget || e.target;
+    target.classList.remove('dragging');
     state.dragData = null;
     // Remove all drop-target highlights
     document.querySelectorAll('.task-card.drop-target').forEach(card => {
@@ -574,18 +577,21 @@ function handleSkillDragEnd(e) {
 }
 
 function handleAgentDragStart(e) {
-    const agentId = e.target.dataset.agentId || e.target.querySelector('.agent-name')?.textContent;
+    // Use currentTarget to ensure we get the draggable element, not a child
+    const target = e.currentTarget || e.target;
+    const agentId = target.dataset.agentId || target.querySelector('.agent-name')?.textContent;
     state.dragData = {
         type: 'agent',
         id: agentId
     };
-    e.target.classList.add('dragging');
+    target.classList.add('dragging');
     e.dataTransfer.setData('text/plain', JSON.stringify(state.dragData));
     e.dataTransfer.effectAllowed = 'copy';
 }
 
 function handleAgentDragEnd(e) {
-    e.target.classList.remove('dragging');
+    const target = e.currentTarget || e.target;
+    target.classList.remove('dragging');
     state.dragData = null;
     // Remove all drop-target highlights
     document.querySelectorAll('.task-card.drop-target').forEach(card => {
@@ -656,55 +662,68 @@ function removeAssignment(taskId, type) {
 }
 
 function saveTaskAssignment(taskId, type, value) {
-    // Save to localStorage for persistence
-    const assignments = JSON.parse(localStorage.getItem('task_assignments') || '{}');
-    if (!assignments[taskId]) assignments[taskId] = {};
+    // Save to localStorage for persistence (with error handling)
+    try {
+        const assignments = JSON.parse(localStorage.getItem('task_assignments') || '{}');
+        if (!assignments[taskId]) assignments[taskId] = {};
 
-    if (value === null) {
-        delete assignments[taskId][type];
-    } else {
-        assignments[taskId][type] = value;
+        if (value === null) {
+            delete assignments[taskId][type];
+        } else {
+            assignments[taskId][type] = value;
+        }
+
+        localStorage.setItem('task_assignments', JSON.stringify(assignments));
+    } catch (error) {
+        console.error('Failed to save task assignment:', error);
+        showToast('Failed to save assignment', 'error');
     }
-
-    localStorage.setItem('task_assignments', JSON.stringify(assignments));
 }
 
 function loadTaskAssignments() {
-    const assignments = JSON.parse(localStorage.getItem('task_assignments') || '{}');
+    try {
+        const assignments = JSON.parse(localStorage.getItem('task_assignments') || '{}');
 
-    state.tasks.forEach(task => {
-        if (assignments[task.id]) {
-            if (assignments[task.id].skill) {
-                task.assigned_skill = assignments[task.id].skill;
+        state.tasks.forEach(task => {
+            if (assignments[task.id]) {
+                if (assignments[task.id].skill) {
+                    task.assigned_skill = assignments[task.id].skill;
+                }
+                if (assignments[task.id].agent) {
+                    task.assigned_agent = assignments[task.id].agent;
+                }
             }
-            if (assignments[task.id].agent) {
-                task.assigned_agent = assignments[task.id].agent;
-            }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Failed to load task assignments:', error);
+    }
 }
 
 /**
  * Load pending local tasks that haven't been synced yet
  */
 function loadPendingLocalTasks() {
-    const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
+    try {
+        const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
 
-    if (pendingTasks.length > 0) {
-        console.log(`Loading ${pendingTasks.length} pending local tasks`);
+        if (pendingTasks.length > 0) {
+            console.log(`Loading ${pendingTasks.length} pending local tasks`);
 
-        // Add pending tasks to the beginning of the list
-        // Mark them as local so we know they need sync
-        pendingTasks.forEach(task => {
-            task._local = true;
-            task._pendingSync = true;
+            // Add pending tasks to the beginning of the list
+            // Mark them as local so we know they need sync
+            pendingTasks.forEach(task => {
+                task._local = true;
+                task._pendingSync = true;
 
-            // Check if already exists (by id)
-            const exists = state.tasks.some(t => t.id === task.id);
-            if (!exists) {
-                state.tasks.unshift(task);
-            }
-        });
+                // Check if already exists (by id)
+                const exists = state.tasks.some(t => t.id === task.id);
+                if (!exists) {
+                    state.tasks.unshift(task);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load pending local tasks:', error);
     }
 }
 
@@ -712,17 +731,22 @@ function loadPendingLocalTasks() {
  * Save a task locally (will be synced later)
  */
 function saveTaskLocally(task) {
-    const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
+    try {
+        const pendingTasks = JSON.parse(localStorage.getItem('pending_new_tasks') || '[]');
 
-    // Remove if already exists (update)
-    const index = pendingTasks.findIndex(t => t.id === task.id);
-    if (index >= 0) {
-        pendingTasks[index] = task;
-    } else {
-        pendingTasks.push(task);
+        // Remove if already exists (update)
+        const index = pendingTasks.findIndex(t => t.id === task.id);
+        if (index >= 0) {
+            pendingTasks[index] = task;
+        } else {
+            pendingTasks.push(task);
+        }
+
+        localStorage.setItem('pending_new_tasks', JSON.stringify(pendingTasks));
+    } catch (error) {
+        console.error('Failed to save task locally:', error);
+        showToast('Failed to save task locally', 'error');
     }
-
-    localStorage.setItem('pending_new_tasks', JSON.stringify(pendingTasks));
 }
 
 // ============================================================
@@ -1068,15 +1092,19 @@ function submitQuickFix() {
     state.recentFixes = state.recentFixes.slice(0, 5);
     renderRecentFixes();
 
-    // Save to localStorage for sync
-    const pendingFixes = JSON.parse(localStorage.getItem('pending_quick_fixes') || '[]');
-    pendingFixes.push({
-        id: `qf_${Date.now()}`,
-        prompt,
-        agent,
-        created: new Date().toISOString()
-    });
-    localStorage.setItem('pending_quick_fixes', JSON.stringify(pendingFixes));
+    // Save to localStorage for sync (with error handling)
+    try {
+        const pendingFixes = JSON.parse(localStorage.getItem('pending_quick_fixes') || '[]');
+        pendingFixes.push({
+            id: `qf_${Date.now()}`,
+            prompt,
+            agent,
+            created: new Date().toISOString()
+        });
+        localStorage.setItem('pending_quick_fixes', JSON.stringify(pendingFixes));
+    } catch (error) {
+        console.error('Failed to save quick fix:', error);
+    }
 
     showToast('משימה נשלחה! תבוצע בסנכרון הבא.', 'success');
     input.value = '';
@@ -1222,23 +1250,48 @@ function createSkill() {
         return;
     }
 
-    // Queue the skill request
-    const pendingRequests = JSON.parse(localStorage.getItem('pending_skill_requests') || '[]');
-    pendingRequests.push({
-        id: `sr_${Date.now()}`,
-        description: desc,
-        created: new Date().toISOString(),
-        status: 'pending'
-    });
-    localStorage.setItem('pending_skill_requests', JSON.stringify(pendingRequests));
+    // Queue the skill request (with error handling)
+    try {
+        const pendingRequests = JSON.parse(localStorage.getItem('pending_skill_requests') || '[]');
+        pendingRequests.push({
+            id: `sr_${Date.now()}`,
+            description: desc,
+            created: new Date().toISOString(),
+            status: 'pending'
+        });
+        localStorage.setItem('pending_skill_requests', JSON.stringify(pendingRequests));
 
-    showToast(`כישור "${desc.substring(0, 30)}..." נשמר ליצירה`, 'success');
-    document.getElementById('skillDescription').value = '';
+        showToast(`כישור "${desc.substring(0, 30)}..." נשמר ליצירה`, 'success');
+        document.getElementById('skillDescription').value = '';
 
-    // Show the pending request in a toast
-    setTimeout(() => {
-        showToast('הכישור ייווצר בסנכרון הבא עם Claude', 'info');
-    }, 1000);
+        // Show the pending request in a toast
+        setTimeout(() => {
+            showToast('הכישור ייווצר בסנכרון הבא עם Claude', 'info');
+        }, 1000);
+    } catch (error) {
+        console.error('Failed to save skill request:', error);
+        showToast('Failed to save skill request', 'error');
+    }
+}
+
+/**
+ * View all health log entries
+ */
+function viewAllHealthLogs() {
+    // Open health results modal and show all logs
+    const modal = document.getElementById('healthResultsModal');
+    const resultsBody = document.getElementById('healthResultsBody');
+
+    modal.classList.add('open');
+    resultsBody.innerHTML = `
+        <div class="health-fixes-list">
+            <h4>📊 היסטוריית בדיקות בריאות</h4>
+            <p style="color: var(--text-secondary); font-size: 12px;">
+                בדיקות בריאות מתבצעות אוטומטית כל 10 דקות.
+                <br>לצפייה ביומן המלא, בדוק את health-log.jsonl במחשב.
+            </p>
+        </div>
+    `;
 }
 
 // ============================================================
@@ -1526,6 +1579,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // View all health logs button
+    const viewAllHealthBtn = document.getElementById('viewAllHealthBtn');
+    if (viewAllHealthBtn) {
+        viewAllHealthBtn.addEventListener('click', viewAllHealthLogs);
+    }
+
     // View toggle (board/list)
     const toggleViewBtn = document.getElementById('toggleViewBtn');
     if (toggleViewBtn) {
@@ -1627,3 +1686,4 @@ window.launchAgent = launchAgent;
 window.openTaskDetails = openTaskDetails;
 window.updateTaskAssignment = updateTaskAssignment;
 window.saveNewTask = saveNewTask;
+window.viewAllHealthLogs = viewAllHealthLogs;
