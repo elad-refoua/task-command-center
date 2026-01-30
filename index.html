@@ -227,6 +227,16 @@
                     <label for="newTaskDescription">תיאור:</label>
                     <textarea id="newTaskDescription" rows="4" placeholder="פרטים נוספים..."></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="newTaskWorkingDir">תיקיית עבודה: <span style="color: var(--danger-color);">*</span></label>
+                    <input type="text" id="newTaskWorkingDir" placeholder="C:\Users\user\Desktop\projects\..." list="recentDirs">
+                    <datalist id="recentDirs">
+                        <option value="C:\Users\user\Desktop\projects">
+                        <option value="C:\Users\user\Desktop">
+                        <option value="C:\Users\user\.claude">
+                    </datalist>
+                    <small style="color: var(--text-secondary); font-size: 11px;">התיקייה שבה המשימה תרוץ ותייצא קבצים</small>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="newTaskAgent">סוכן:</label>

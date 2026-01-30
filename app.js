@@ -812,7 +812,33 @@ function startTask(taskId) {
     const task = state.tasks.find(t => t.id === taskId);
     if (!task) return;
 
-    showToast(`מתחיל משימה: ${task.subject}`, 'success');
+    // Mark as in_progress
+    task.status = 'in_progress';
+    task.last_updated = new Date().toISOString();
+    renderTasks();
+
+    // Queue the task for execution
+    // Since we can't run Claude from browser, we save to pending queue
+    // The health check will pick it up and execute it
+    try {
+        const pendingExec = JSON.parse(localStorage.getItem('pending_task_executions') || '[]');
+        pendingExec.push({
+            id: taskId,
+            subject: task.subject,
+            description: task.description || task.subject,
+            working_dir: task.working_dir || '',
+            agent: task.assigned_agent || '',
+            skill: task.assigned_skill || '',
+            queued_at: new Date().toISOString()
+        });
+        localStorage.setItem('pending_task_executions', JSON.stringify(pendingExec));
+
+        showToast(`Task queued: ${task.subject}`, 'success');
+        showToast('Will execute on next sync (or run sync-dashboard.js manually)', 'info');
+    } catch (error) {
+        console.error('Failed to queue task:', error);
+        showToast('Failed to queue task', 'error');
+    }
 }
 
 function addTaskToSession(sessionId) {
@@ -1401,6 +1427,7 @@ function saveNewTask() {
     // Get form elements with null checks
     const titleEl = document.getElementById('newTaskTitle');
     const descEl = document.getElementById('newTaskDescription');
+    const workingDirEl = document.getElementById('newTaskWorkingDir');
     const agentEl = document.getElementById('newTaskAgent');
     const skillEl = document.getElementById('newTaskSkill');
     const scheduleTimeEl = document.getElementById('scheduleTime');
@@ -1412,6 +1439,7 @@ function saveNewTask() {
 
     const title = titleEl.value.trim();
     const description = descEl ? descEl.value.trim() : '';
+    const workingDir = workingDirEl ? workingDirEl.value.trim() : '';
     const agent = agentEl ? agentEl.value : '';
     const skill = skillEl ? skillEl.value : '';
     const scheduleType = document.querySelector('input[name="schedule"]:checked')?.value || 'now';
@@ -1422,6 +1450,12 @@ function saveNewTask() {
         return;
     }
 
+    if (!workingDir) {
+        showToast('Working directory is required!', 'warning');
+        if (workingDirEl) workingDirEl.focus();
+        return;
+    }
+
     // Create task object
     const newTask = {
         id: `local_${Date.now()}`,
@@ -1429,6 +1463,7 @@ function saveNewTask() {
         type: 'task',
         subject: title,
         description: description,
+        working_dir: workingDir,
         status: 'pending',
         created: new Date().toISOString(),
         last_updated: new Date().toISOString(),
@@ -1471,6 +1506,7 @@ function saveNewTask() {
     // Clear form and close modal (using previously validated elements)
     if (titleEl) titleEl.value = '';
     if (descEl) descEl.value = '';
+    if (workingDirEl) workingDirEl.value = '';
     if (agentEl) agentEl.value = '';
     if (skillEl) skillEl.value = '';
     const nowRadio = document.querySelector('input[name="schedule"][value="now"]');

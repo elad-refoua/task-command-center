@@ -1,12 +1,12 @@
 {
-  "updated": "2026-01-30T00:31:10.763Z",
+  "updated": "2026-01-30T00:37:15.224Z",
   "statistics": {
-    "total_skills": 51,
-    "user_invocable": 45,
+    "total_skills": 52,
+    "user_invocable": 46,
     "categories": [
       {
         "name": "code",
-        "count": 51
+        "count": 52
       },
       {
         "name": "documents",
@@ -14,7 +14,7 @@
       },
       {
         "name": "hebrew",
-        "count": 19
+        "count": 20
       },
       {
         "name": "analysis",
@@ -26,7 +26,7 @@
       },
       {
         "name": "git",
-        "count": 14
+        "count": 15
       },
       {
         "name": "messaging",
@@ -41,8 +41,12 @@
         "count": 4
       }
     ],
-    "last_updated": "2026-01-29T23:34:41.527Z",
+    "last_updated": "2026-01-30T00:37:15.730Z",
     "recently_modified": [
+      {
+        "id": "qualtrics-cleaning",
+        "title": "Qualtrics Data Import & Cleaning Skill"
+      },
       {
         "id": "desktop-monitor",
         "title": "Desktop Monitor"
@@ -58,10 +62,6 @@
       {
         "id": "hebrew-keyboard",
         "title": "Hebrew Keyboard Interpreter"
-      },
-      {
-        "id": "word-formatting",
-        "title": "Word Document Formatting with python-docx"
       }
     ]
   },
@@ -338,6 +338,17 @@
       "triggers": [],
       "categories": [
         "code"
+      ]
+    },
+    {
+      "id": "qualtrics-cleaning",
+      "title": "Qualtrics Data Import & Cleaning Skill",
+      "description": "Comprehensive workflow for importing data directly from Qualtrics and cleaning it in R. Based on the ISF/BSF project data cleaning processes.",
+      "triggers": [],
+      "categories": [
+        "git",
+        "code",
+        "hebrew"
       ]
     },
     {
